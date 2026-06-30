@@ -1,0 +1,689 @@
+[
+  {
+    "id": "bl_small",
+    "name": "Small Blind",
+    "defeated": false,
+    "order": 1,
+    "dollars": 3,
+    "mult": 1,
+    "vars": {
+      "}": null
+    },
+    "debuff_text": "",
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 0
+    }
+  },
+  {
+    "id": "bl_big",
+    "name": "Big Blind",
+    "defeated": false,
+    "order": 2,
+    "dollars": 4,
+    "mult": 1.5,
+    "vars": {
+      "}": null
+    },
+    "debuff_text": "",
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 1
+    }
+  },
+  {
+    "id": "bl_ox",
+    "name": "The Ox",
+    "defeated": false,
+    "order": 4,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "localize('ph_most_played')}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 2
+    },
+    "boss": {
+      "min": 6,
+      "max": 10
+    },
+    "boss_colour": "HEX('b95b08')"
+  },
+  {
+    "id": "bl_hook",
+    "name": "The Hook",
+    "defeated": false,
+    "order": 3,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 7
+    },
+    "boss": {
+      "min": 1,
+      "max": 10
+    },
+    "boss_colour": "HEX('a84024')"
+  },
+  {
+    "id": "bl_mouth",
+    "name": "The Mouth",
+    "defeated": false,
+    "order": 17,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 18
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('ae718e')"
+  },
+  {
+    "id": "bl_fish",
+    "name": "The Fish",
+    "defeated": false,
+    "order": 10,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 5
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('3e85bd')"
+  },
+  {
+    "id": "bl_club",
+    "name": "The Club",
+    "defeated": false,
+    "order": 9,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "suit": "Clubs"
+    },
+    "pos": {
+      "x": 0,
+      "y": 4
+    },
+    "boss": {
+      "min": 1,
+      "max": 10
+    },
+    "boss_colour": "HEX('b9cb92')"
+  },
+  {
+    "id": "bl_manacle",
+    "name": "The Manacle",
+    "defeated": false,
+    "order": 15,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 8
+    },
+    "boss": {
+      "min": 1,
+      "max": 10
+    },
+    "boss_colour": "HEX('575757')"
+  },
+  {
+    "id": "bl_tooth",
+    "name": "The Tooth",
+    "defeated": false,
+    "order": 23,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 22
+    },
+    "boss": {
+      "min": 3,
+      "max": 10
+    },
+    "boss_colour": "HEX('b52d2d')"
+  },
+  {
+    "id": "bl_wall",
+    "name": "The Wall",
+    "defeated": false,
+    "order": 6,
+    "dollars": 5,
+    "mult": 4,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 9
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('8a59a5')"
+  },
+  {
+    "id": "bl_house",
+    "name": "The House",
+    "defeated": false,
+    "order": 5,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 3
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('5186a8')"
+  },
+  {
+    "id": "bl_mark",
+    "name": "The Mark",
+    "defeated": false,
+    "order": 25,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 23
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('6a3847')"
+  },
+  {
+    "id": "bl_final_bell",
+    "name": "Cerulean Bell",
+    "defeated": false,
+    "order": 30,
+    "dollars": 8,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 26
+    },
+    "boss": {
+      "showdown": true,
+      "min": 10,
+      "max": 10
+    },
+    "boss_colour": "HEX('009cfd')"
+  },
+  {
+    "id": "bl_wheel",
+    "name": "The Wheel",
+    "defeated": false,
+    "order": 7,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 10
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('50bf7c')"
+  },
+  {
+    "id": "bl_arm",
+    "name": "The Arm",
+    "defeated": false,
+    "order": 8,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 11
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('6865f3')"
+  },
+  {
+    "id": "bl_psychic",
+    "name": "The Psychic",
+    "defeated": false,
+    "order": 11,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "h_size_ge": 5
+    },
+    "pos": {
+      "x": 0,
+      "y": 12
+    },
+    "boss": {
+      "min": 1,
+      "max": 10
+    },
+    "boss_colour": "HEX('efc03c')"
+  },
+  {
+    "id": "bl_goad",
+    "name": "The Goad",
+    "defeated": false,
+    "order": 12,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "suit": "Spades"
+    },
+    "pos": {
+      "x": 0,
+      "y": 13
+    },
+    "boss": {
+      "min": 1,
+      "max": 10
+    },
+    "boss_colour": "HEX('b95c96')"
+  },
+  {
+    "id": "bl_water",
+    "name": "The Water",
+    "defeated": false,
+    "order": 13,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 14
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('c6e0eb')"
+  },
+  {
+    "id": "bl_eye",
+    "name": "The Eye",
+    "defeated": false,
+    "order": 16,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 17
+    },
+    "boss": {
+      "min": 3,
+      "max": 10
+    },
+    "boss_colour": "HEX('4b71e4')"
+  },
+  {
+    "id": "bl_plant",
+    "name": "The Plant",
+    "defeated": false,
+    "order": 18,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "is_face": "face"
+    },
+    "pos": {
+      "x": 0,
+      "y": 19
+    },
+    "boss": {
+      "min": 4,
+      "max": 10
+    },
+    "boss_colour": "HEX('709284')"
+  },
+  {
+    "id": "bl_needle",
+    "name": "The Needle",
+    "defeated": false,
+    "order": 21,
+    "dollars": 5,
+    "mult": 1,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 20
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('5c6e31')"
+  },
+  {
+    "id": "bl_head",
+    "name": "The Head",
+    "defeated": false,
+    "order": 22,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "suit": "Hearts"
+    },
+    "pos": {
+      "x": 0,
+      "y": 21
+    },
+    "boss": {
+      "min": 1,
+      "max": 10
+    },
+    "boss_colour": "HEX('ac9db4')"
+  },
+  {
+    "id": "bl_final_leaf",
+    "name": "Verdant Leaf",
+    "defeated": false,
+    "order": 27,
+    "dollars": 8,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 28
+    },
+    "boss": {
+      "showdown": true,
+      "min": 10,
+      "max": 10
+    },
+    "boss_colour": "HEX('56a786')"
+  },
+  {
+    "id": "bl_final_vessel",
+    "name": "Violet Vessel",
+    "defeated": false,
+    "order": 28,
+    "dollars": 8,
+    "mult": 6,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 29
+    },
+    "boss": {
+      "showdown": true,
+      "min": 10,
+      "max": 10
+    },
+    "boss_colour": "HEX('8a71e1')"
+  },
+  {
+    "id": "bl_window",
+    "name": "The Window",
+    "defeated": false,
+    "order": 14,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "suit": "Diamonds"
+    },
+    "pos": {
+      "x": 0,
+      "y": 6
+    },
+    "boss": {
+      "min": 1,
+      "max": 10
+    },
+    "boss_colour": "HEX('a9a295')"
+  },
+  {
+    "id": "bl_serpent",
+    "name": "The Serpent",
+    "defeated": false,
+    "order": 19,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 15
+    },
+    "boss": {
+      "min": 5,
+      "max": 10
+    },
+    "boss_colour": "HEX('439a4f')"
+  },
+  {
+    "id": "bl_pillar",
+    "name": "The Pillar",
+    "defeated": false,
+    "order": 20,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 16
+    },
+    "boss": {
+      "min": 1,
+      "max": 10
+    },
+    "boss_colour": "HEX('7e6752')"
+  },
+  {
+    "id": "bl_flint",
+    "name": "The Flint",
+    "defeated": false,
+    "order": 24,
+    "dollars": 5,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 24
+    },
+    "boss": {
+      "min": 2,
+      "max": 10
+    },
+    "boss_colour": "HEX('e56a2f')"
+  },
+  {
+    "id": "bl_final_acorn",
+    "name": "Amber Acorn",
+    "defeated": false,
+    "order": 26,
+    "dollars": 8,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 27
+    },
+    "boss": {
+      "showdown": true,
+      "min": 10,
+      "max": 10
+    },
+    "boss_colour": "HEX('fda200')"
+  },
+  {
+    "id": "bl_final_heart",
+    "name": "Crimson Heart",
+    "defeated": false,
+    "order": 29,
+    "dollars": 8,
+    "mult": 2,
+    "vars": {
+      "}": null
+    },
+    "debuff": {
+      "}": null
+    },
+    "pos": {
+      "x": 0,
+      "y": 25
+    },
+    "boss": {
+      "showdown": true,
+      "min": 10,
+      "max": 10
+    },
+    "boss_colour": "HEX('ac3232')"
+  }
+]

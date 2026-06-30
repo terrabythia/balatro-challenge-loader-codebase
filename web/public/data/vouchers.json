@@ -1,0 +1,663 @@
+[
+  {
+    "id": "v_overstock_norm",
+    "order": 1,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Overstock",
+    "pos": {
+      "x": 0,
+      "y": 0
+    },
+    "set": "Voucher",
+    "config": {
+      "}": null
+    }
+  },
+  {
+    "id": "v_clearance_sale",
+    "order": 3,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Clearance Sale",
+    "pos": {
+      "x": 3,
+      "y": 0
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 25
+    }
+  },
+  {
+    "id": "v_hone",
+    "order": 5,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Hone",
+    "pos": {
+      "x": 4,
+      "y": 0
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 2
+    }
+  },
+  {
+    "id": "v_reroll_surplus",
+    "order": 7,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Reroll Surplus",
+    "pos": {
+      "x": 0,
+      "y": 2
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 2
+    }
+  },
+  {
+    "id": "v_crystal_ball",
+    "order": 9,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Crystal Ball",
+    "pos": {
+      "x": 2,
+      "y": 2
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 3
+    }
+  },
+  {
+    "id": "v_telescope",
+    "order": 11,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Telescope",
+    "pos": {
+      "x": 3,
+      "y": 2
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 3
+    }
+  },
+  {
+    "id": "v_grabber",
+    "order": 13,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Grabber",
+    "pos": {
+      "x": 5,
+      "y": 0
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1
+    }
+  },
+  {
+    "id": "v_wasteful",
+    "order": 15,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Wasteful",
+    "pos": {
+      "x": 6,
+      "y": 0
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1
+    }
+  },
+  {
+    "id": "v_tarot_merchant",
+    "order": 17,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Tarot Merchant",
+    "pos": {
+      "x": 1,
+      "y": 0
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": "9.6/4",
+      "extra_disp": 2
+    }
+  },
+  {
+    "id": "v_planet_merchant",
+    "order": 19,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Planet Merchant",
+    "pos": {
+      "x": 2,
+      "y": 0
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": "9.6/4",
+      "extra_disp": 2
+    }
+  },
+  {
+    "id": "v_seed_money",
+    "order": 21,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Seed Money",
+    "pos": {
+      "x": 1,
+      "y": 2
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 50
+    }
+  },
+  {
+    "id": "v_blank",
+    "order": 23,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Blank",
+    "pos": {
+      "x": 7,
+      "y": 0
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 5
+    }
+  },
+  {
+    "id": "v_magic_trick",
+    "order": 25,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Magic Trick",
+    "pos": {
+      "x": 4,
+      "y": 2
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 4
+    }
+  },
+  {
+    "id": "v_hieroglyph",
+    "order": 27,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Hieroglyph",
+    "pos": {
+      "x": 5,
+      "y": 2
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1
+    }
+  },
+  {
+    "id": "v_directors_cut",
+    "order": 29,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Director's Cut",
+    "pos": {
+      "x": 6,
+      "y": 2
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 10
+    }
+  },
+  {
+    "id": "v_paint_brush",
+    "order": 31,
+    "discovered": false,
+    "unlocked": true,
+    "available": true,
+    "cost": 10,
+    "name": "Paint Brush",
+    "pos": {
+      "x": 7,
+      "y": 2
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1
+    }
+  },
+  {
+    "id": "v_overstock_plus",
+    "order": 2,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Overstock Plus",
+    "pos": {
+      "x": 0,
+      "y": 1
+    },
+    "set": "Voucher",
+    "config": {
+      "}": null
+    },
+    "requires": {
+      "'v_overstock_norm'}": null
+    },
+    "unlock_condition": {
+      "type": "c_shop_dollars_spent",
+      "extra": 2500
+    }
+  },
+  {
+    "id": "v_liquidation",
+    "order": 4,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Liquidation",
+    "pos": {
+      "x": 3,
+      "y": 1
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 50
+    },
+    "requires": {
+      "'v_clearance_sale'}": null
+    },
+    "unlock_condition": {
+      "type": "run_redeem",
+      "extra": 10
+    }
+  },
+  {
+    "id": "v_glow_up",
+    "order": 6,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Glow Up",
+    "pos": {
+      "x": 4,
+      "y": 1
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 4
+    },
+    "requires": {
+      "'v_hone'}": null
+    },
+    "unlock_condition": {
+      "type": "have_edition",
+      "extra": 5
+    }
+  },
+  {
+    "id": "v_reroll_glut",
+    "order": 8,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Reroll Glut",
+    "pos": {
+      "x": 0,
+      "y": 3
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 2
+    },
+    "requires": {
+      "'v_reroll_surplus'}": null
+    },
+    "unlock_condition": {
+      "type": "c_shop_rerolls",
+      "extra": 100
+    }
+  },
+  {
+    "id": "v_omen_globe",
+    "order": 10,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Omen Globe",
+    "pos": {
+      "x": 2,
+      "y": 3
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 4
+    },
+    "requires": {
+      "'v_crystal_ball'}": null
+    },
+    "unlock_condition": {
+      "type": "c_tarot_reading_used",
+      "extra": 25
+    }
+  },
+  {
+    "id": "v_observatory",
+    "order": 12,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Observatory",
+    "pos": {
+      "x": 3,
+      "y": 3
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1.5
+    },
+    "requires": {
+      "'v_telescope'}": null
+    },
+    "unlock_condition": {
+      "type": "c_planetarium_used",
+      "extra": 25
+    }
+  },
+  {
+    "id": "v_nacho_tong",
+    "order": 14,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Nacho Tong",
+    "pos": {
+      "x": 5,
+      "y": 1
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1
+    },
+    "requires": {
+      "'v_grabber'}": null
+    },
+    "unlock_condition": {
+      "type": "c_cards_played",
+      "extra": 2500
+    }
+  },
+  {
+    "id": "v_recyclomancy",
+    "order": 16,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Recyclomancy",
+    "pos": {
+      "x": 6,
+      "y": 1
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1
+    },
+    "requires": {
+      "'v_wasteful'}": null
+    },
+    "unlock_condition": {
+      "type": "c_cards_discarded",
+      "extra": 2500
+    }
+  },
+  {
+    "id": "v_tarot_tycoon",
+    "order": 18,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Tarot Tycoon",
+    "pos": {
+      "x": 1,
+      "y": 1
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": "32/4",
+      "extra_disp": 4
+    },
+    "requires": {
+      "'v_tarot_merchant'}": null
+    },
+    "unlock_condition": {
+      "type": "c_tarots_bought",
+      "extra": 50
+    }
+  },
+  {
+    "id": "v_planet_tycoon",
+    "order": 20,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Planet Tycoon",
+    "pos": {
+      "x": 2,
+      "y": 1
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": "32/4",
+      "extra_disp": 4
+    },
+    "requires": {
+      "'v_planet_merchant'}": null
+    },
+    "unlock_condition": {
+      "type": "c_planets_bought",
+      "extra": 50
+    }
+  },
+  {
+    "id": "v_money_tree",
+    "order": 22,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Money Tree",
+    "pos": {
+      "x": 1,
+      "y": 3
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 100
+    },
+    "requires": {
+      "'v_seed_money'}": null
+    },
+    "unlock_condition": {
+      "type": "interest_streak",
+      "extra": 10
+    }
+  },
+  {
+    "id": "v_antimatter",
+    "order": 24,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Antimatter",
+    "pos": {
+      "x": 7,
+      "y": 1
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 15
+    },
+    "requires": {
+      "'v_blank'}": null
+    },
+    "unlock_condition": {
+      "type": "blank_redeems",
+      "extra": 10
+    }
+  },
+  {
+    "id": "v_illusion",
+    "order": 26,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Illusion",
+    "pos": {
+      "x": 4,
+      "y": 3
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 4
+    },
+    "requires": {
+      "'v_magic_trick'}": null
+    },
+    "unlock_condition": {
+      "type": "c_playing_cards_bought",
+      "extra": 20
+    }
+  },
+  {
+    "id": "v_petroglyph",
+    "order": 28,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Petroglyph",
+    "pos": {
+      "x": 5,
+      "y": 3
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1
+    },
+    "requires": {
+      "'v_hieroglyph'}": null
+    },
+    "unlock_condition": {
+      "type": "ante_up",
+      "ante": 12,
+      "extra": 12
+    }
+  },
+  {
+    "id": "v_retcon",
+    "order": 30,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Retcon",
+    "pos": {
+      "x": 6,
+      "y": 3
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 10
+    },
+    "requires": {
+      "'v_directors_cut'}": null
+    },
+    "unlock_condition": {
+      "type": "blind_discoveries",
+      "extra": 25
+    }
+  },
+  {
+    "id": "v_palette",
+    "order": 32,
+    "discovered": false,
+    "unlocked": false,
+    "available": true,
+    "cost": 10,
+    "name": "Palette",
+    "pos": {
+      "x": 7,
+      "y": 3
+    },
+    "set": "Voucher",
+    "config": {
+      "extra": 1
+    },
+    "requires": {
+      "'v_paint_brush'}": null
+    },
+    "unlock_condition": {
+      "type": "min_hand_size",
+      "extra": 5
+    }
+  }
+]

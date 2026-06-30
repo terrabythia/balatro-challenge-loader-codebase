@@ -1,0 +1,948 @@
+[
+  {
+    "id": "c_fool",
+    "order": 1,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Fool",
+    "pos": {
+      "x": 0,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Disable Blind Effect",
+    "cost_mult": 1,
+    "config": {
+      "}": null
+    }
+  },
+  {
+    "id": "c_magician",
+    "order": 2,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Magician",
+    "pos": {
+      "x": 1,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Enhance",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "m_lucky",
+      "max_highlighted": 2
+    }
+  },
+  {
+    "id": "c_high_priestess",
+    "order": 3,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The High Priestess",
+    "pos": {
+      "x": 2,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Round Bonus",
+    "cost_mult": 1,
+    "config": {
+      "planets": 2
+    }
+  },
+  {
+    "id": "c_empress",
+    "order": 4,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Empress",
+    "pos": {
+      "x": 3,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Enhance",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "m_mult",
+      "max_highlighted": 2
+    }
+  },
+  {
+    "id": "c_emperor",
+    "order": 5,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Emperor",
+    "pos": {
+      "x": 4,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Round Bonus",
+    "cost_mult": 1,
+    "config": {
+      "tarots": 2
+    }
+  },
+  {
+    "id": "c_heirophant",
+    "order": 6,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Hierophant",
+    "pos": {
+      "x": 5,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Enhance",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "m_bonus",
+      "max_highlighted": 2
+    }
+  },
+  {
+    "id": "c_lovers",
+    "order": 7,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Lovers",
+    "pos": {
+      "x": 6,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Enhance",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "m_wild",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_chariot",
+    "order": 8,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Chariot",
+    "pos": {
+      "x": 7,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Enhance",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "m_steel",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_justice",
+    "order": 9,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "Justice",
+    "pos": {
+      "x": 8,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Enhance",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "m_glass",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_hermit",
+    "order": 10,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Hermit",
+    "pos": {
+      "x": 9,
+      "y": 0
+    },
+    "set": "Tarot",
+    "effect": "Dollar Doubler",
+    "cost_mult": 1,
+    "config": {
+      "extra": 20
+    }
+  },
+  {
+    "id": "c_wheel_of_fortune",
+    "order": 11,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Wheel of Fortune",
+    "pos": {
+      "x": 0,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Round Bonus",
+    "cost_mult": 1,
+    "config": {
+      "extra": 4
+    }
+  },
+  {
+    "id": "c_strength",
+    "order": 12,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "Strength",
+    "pos": {
+      "x": 1,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Round Bonus",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "up_rank",
+      "max_highlighted": 2
+    }
+  },
+  {
+    "id": "c_hanged_man",
+    "order": 13,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Hanged Man",
+    "pos": {
+      "x": 2,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Card Removal",
+    "cost_mult": 1,
+    "config": {
+      "remove_card": true,
+      "max_highlighted": 2
+    }
+  },
+  {
+    "id": "c_death",
+    "order": 14,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "Death",
+    "pos": {
+      "x": 3,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Card Conversion",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "card",
+      "max_highlighted": 2,
+      "min_highlighted": 2
+    }
+  },
+  {
+    "id": "c_temperance",
+    "order": 15,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "Temperance",
+    "pos": {
+      "x": 4,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Joker Payout",
+    "cost_mult": 1,
+    "config": {
+      "extra": 50
+    }
+  },
+  {
+    "id": "c_devil",
+    "order": 16,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Devil",
+    "pos": {
+      "x": 5,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Enhance",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "m_gold",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_tower",
+    "order": 17,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Tower",
+    "pos": {
+      "x": 6,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Enhance",
+    "cost_mult": 1,
+    "config": {
+      "mod_conv": "m_stone",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_star",
+    "order": 18,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Star",
+    "pos": {
+      "x": 7,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Suit Conversion",
+    "cost_mult": 1,
+    "config": {
+      "suit_conv": "Diamonds",
+      "max_highlighted": 3
+    }
+  },
+  {
+    "id": "c_moon",
+    "order": 19,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Moon",
+    "pos": {
+      "x": 8,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Suit Conversion",
+    "cost_mult": 1,
+    "config": {
+      "suit_conv": "Clubs",
+      "max_highlighted": 3
+    }
+  },
+  {
+    "id": "c_sun",
+    "order": 20,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The Sun",
+    "pos": {
+      "x": 9,
+      "y": 1
+    },
+    "set": "Tarot",
+    "effect": "Suit Conversion",
+    "cost_mult": 1,
+    "config": {
+      "suit_conv": "Hearts",
+      "max_highlighted": 3
+    }
+  },
+  {
+    "id": "c_judgement",
+    "order": 21,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "Judgement",
+    "pos": {
+      "x": 0,
+      "y": 2
+    },
+    "set": "Tarot",
+    "effect": "Random Joker",
+    "cost_mult": 1,
+    "config": {
+      "}": null
+    }
+  },
+  {
+    "id": "c_world",
+    "order": 22,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "name": "The World",
+    "pos": {
+      "x": 1,
+      "y": 2
+    },
+    "set": "Tarot",
+    "effect": "Suit Conversion",
+    "cost_mult": 1,
+    "config": {
+      "suit_conv": "Spades",
+      "max_highlighted": 3
+    }
+  },
+  {
+    "id": "c_mercury",
+    "order": 1,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Mercury",
+    "pos": {
+      "x": 0,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Pair"
+    }
+  },
+  {
+    "id": "c_venus",
+    "order": 2,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Venus",
+    "pos": {
+      "x": 1,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Three of a Kind"
+    }
+  },
+  {
+    "id": "c_earth",
+    "order": 3,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Earth",
+    "pos": {
+      "x": 2,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Full House"
+    }
+  },
+  {
+    "id": "c_mars",
+    "order": 4,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Mars",
+    "pos": {
+      "x": 3,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Four of a Kind"
+    }
+  },
+  {
+    "id": "c_jupiter",
+    "order": 5,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Jupiter",
+    "pos": {
+      "x": 4,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Flush"
+    }
+  },
+  {
+    "id": "c_saturn",
+    "order": 6,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Saturn",
+    "pos": {
+      "x": 5,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Straight"
+    }
+  },
+  {
+    "id": "c_uranus",
+    "order": 7,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Uranus",
+    "pos": {
+      "x": 6,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Two Pair"
+    }
+  },
+  {
+    "id": "c_neptune",
+    "order": 8,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Neptune",
+    "pos": {
+      "x": 7,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Straight Flush"
+    }
+  },
+  {
+    "id": "c_pluto",
+    "order": 9,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Pluto",
+    "pos": {
+      "x": 8,
+      "y": 3
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "High Card"
+    }
+  },
+  {
+    "id": "c_planet_x",
+    "order": 10,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Planet X",
+    "pos": {
+      "x": 9,
+      "y": 2
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Five of a Kind",
+      "softlock": true
+    }
+  },
+  {
+    "id": "c_ceres",
+    "order": 11,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Ceres",
+    "pos": {
+      "x": 8,
+      "y": 2
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Flush House",
+      "softlock": true
+    }
+  },
+  {
+    "id": "c_eris",
+    "order": 12,
+    "discovered": false,
+    "cost": 3,
+    "consumeable": true,
+    "freq": 1,
+    "name": "Eris",
+    "pos": {
+      "x": 3,
+      "y": 2
+    },
+    "set": "Planet",
+    "effect": "Hand Upgrade",
+    "cost_mult": 1,
+    "config": {
+      "hand_type": "Flush Five",
+      "softlock": true
+    }
+  },
+  {
+    "id": "c_familiar",
+    "order": 1,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Familiar",
+    "pos": {
+      "x": 0,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "remove_card": true,
+      "extra": 3
+    }
+  },
+  {
+    "id": "c_grim",
+    "order": 2,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Grim",
+    "pos": {
+      "x": 1,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "remove_card": true,
+      "extra": 2
+    }
+  },
+  {
+    "id": "c_incantation",
+    "order": 3,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Incantation",
+    "pos": {
+      "x": 2,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "remove_card": true,
+      "extra": 4
+    }
+  },
+  {
+    "id": "c_talisman",
+    "order": 4,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Talisman",
+    "pos": {
+      "x": 3,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "extra": "Gold",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_aura",
+    "order": 5,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Aura",
+    "pos": {
+      "x": 4,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "}": null
+    }
+  },
+  {
+    "id": "c_wraith",
+    "order": 6,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Wraith",
+    "pos": {
+      "x": 5,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "}": null
+    }
+  },
+  {
+    "id": "c_sigil",
+    "order": 7,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Sigil",
+    "pos": {
+      "x": 6,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "}": null
+    }
+  },
+  {
+    "id": "c_ouija",
+    "order": 8,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Ouija",
+    "pos": {
+      "x": 7,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "}": null
+    }
+  },
+  {
+    "id": "c_ectoplasm",
+    "order": 9,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Ectoplasm",
+    "pos": {
+      "x": 8,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "}": null
+    }
+  },
+  {
+    "id": "c_immolate",
+    "order": 10,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Immolate",
+    "pos": {
+      "x": 9,
+      "y": 4
+    },
+    "set": "Spectral",
+    "config": {
+      "remove_card": true,
+      "extra": {
+        "destroy": 5,
+        "dollars": 20
+      }
+    }
+  },
+  {
+    "id": "c_ankh",
+    "order": 11,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Ankh",
+    "pos": {
+      "x": 0,
+      "y": 5
+    },
+    "set": "Spectral",
+    "config": {
+      "extra": 2
+    }
+  },
+  {
+    "id": "c_deja_vu",
+    "order": 12,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Deja Vu",
+    "pos": {
+      "x": 1,
+      "y": 5
+    },
+    "set": "Spectral",
+    "config": {
+      "extra": "Red",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_hex",
+    "order": 13,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Hex",
+    "pos": {
+      "x": 2,
+      "y": 5
+    },
+    "set": "Spectral",
+    "config": {
+      "extra": 2
+    }
+  },
+  {
+    "id": "c_trance",
+    "order": 14,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Trance",
+    "pos": {
+      "x": 3,
+      "y": 5
+    },
+    "set": "Spectral",
+    "config": {
+      "extra": "Blue",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_medium",
+    "order": 15,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Medium",
+    "pos": {
+      "x": 4,
+      "y": 5
+    },
+    "set": "Spectral",
+    "config": {
+      "extra": "Purple",
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_cryptid",
+    "order": 16,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Cryptid",
+    "pos": {
+      "x": 5,
+      "y": 5
+    },
+    "set": "Spectral",
+    "config": {
+      "extra": 2,
+      "max_highlighted": 1
+    }
+  },
+  {
+    "id": "c_soul",
+    "order": 17,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "The Soul",
+    "pos": {
+      "x": 2,
+      "y": 2
+    },
+    "set": "Spectral",
+    "effect": "Unlocker",
+    "config": {
+      "}": null
+    },
+    "hidden": true
+  },
+  {
+    "id": "c_black_hole",
+    "order": 18,
+    "discovered": false,
+    "cost": 4,
+    "consumeable": true,
+    "name": "Black Hole",
+    "pos": {
+      "x": 9,
+      "y": 3
+    },
+    "set": "Spectral",
+    "config": {
+      "}": null
+    },
+    "hidden": true
+  }
+]
