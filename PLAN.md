@@ -27,7 +27,7 @@ A community hub for creating, sharing, and playing custom Balatro challenges (an
 │  │    /          → Landing + popular challenges      │   │
 │  │    /hub       → Browse, search, filter, ratings   │   │
 │  │    /build     → Visual challenge builder          │   │
-│  │    /login     → Discord OAuth (NextAuth.js)       │   │
+│  │    /login     → Discord OAuth (hand-rolled JWT)    │   │
 │  │                                                  │   │
 │  │  API Routes (same process, same port):           │   │
 │  │    GET  /api/content?type=&search=&sort=          │   │
@@ -37,7 +37,7 @@ A community hub for creating, sharing, and playing custom Balatro challenges (an
 │  │    POST /api/content/:code/publish (auth req'd)   │   │
 │  │    POST /api/ratings          (auth required)     │   │
 │  │                                                  │   │
-│  │  Auth: NextAuth.js (Discord provider)             │   │
+│  │  Auth: Hand-rolled JWT via jose (Discord provider)│   │
 │  │  DB:  Bun.sql or pg (Postgres driver)            │   │
 │  └────────────────┬─────────────────────────────────┘   │
 │                   │                                      │
@@ -108,7 +108,7 @@ One process, one port, one set of types. Nginx routes both the web app (HTTPS) a
 | Runtime | **Bun 1.x** | `bun --bun next dev/build/start` |
 | Framework | **Next.js 14** (App Router) | Pages + API routes in one app |
 | Styling | **Tailwind CSS** | Utility-first, no component library |
-| Auth | **NextAuth.js** (Discord provider) | `app/api/auth/[...nextauth]/route.ts` |
+| Auth | **Hand-rolled JWT** (Discord provider) | `lib/auth.ts`, `app/api/auth/` |
 | Database driver | **`pg`** or **`Bun.sql`** | Both work with Bun, `Bun.sql` is native |
 | Validation | **zod** | Type-safe request/response validation |
 | Hosting | **Docker on VPS** | Two containers: Postgres + Bun/Next.js |
@@ -961,14 +961,14 @@ The mod connects to the VPS on port 3001 (plain HTTP, no TLS). Nginx proxies thi
 
 ## Open Questions / TODO
 
-- [ ] What OS is the Hostinger VPS running? (needed for Docker setup)
+- [x] What OS is the Hostinger VPS running? (needed for Docker setup) → AlmaLinux 10.2
 - [ ] Domain name for the hub? (or use VPS IP directly)
-- [ ] Test code format: short alphanumeric (`GL4SS`) or human-readable (`glass-horde`)?
-- [ ] Should challenge JSON keys be auto-generated from names or user-chosen?
+- [x] Test code format: short alphanumeric (`GL4SS`) → implemented as 2×5 alphanumeric with ambiguous chars excluded
+- [x] Should challenge JSON keys be auto-generated from names or user-chosen? → auto-generated from name + prepended with Discord user ID for uniqueness
 - [ ] Mod: cache downloaded challenges locally to survive restarts without network?
 - [ ] Web: rate limiting on API to prevent abuse?
 - [ ] Web: admin panel for moderation (report/remove inappropriate content)?
-- [ ] Discord application setup (client ID + secret from Discord Developer Portal)
+- [x] Discord application setup (client ID + secret from Discord Developer Portal) → done
 
 ## Builder Validation (TODO)
 
@@ -977,3 +977,16 @@ The mod connects to the VPS on port 3001 (plain HTTP, no TLS). Nginx proxies thi
 - [ ] **Deck minimum** — warn if deck has very few cards (< ~20), since that may brick the run
 - [ ] **Duplicate joker check** — warn when the same joker ID appears multiple times (may cause issues with some jokers)
 - [ ] **Publish guard** — require at least one saved draft before publishing (already enforced via UI, add server-side too)
+
+## Future Enhancements
+
+- [ ] **Joker editions** — starting jokers should be able to have editions (Foil, Holographic, Polychrome, Negative)
+- [ ] **Eternal jokers** — starting jokers should be able to be eternal (cannot be sold/destroyed)
+- [ ] **Perishable/rental jokers** — support other joker stickers
+- [ ] **Card enhancements** — deck cards should support enhancements (Bonus, Mult, Wild, Glass, Steel, Stone, Gold, Lucky)
+- [ ] **Card editions** — deck cards should support editions (Foil, Holographic, Polychrome)
+- [ ] **Card seals** — deck cards should support seals (Red, Blue, Gold, Purple)
+- [ ] **Duplicate cards in deck** — support adding multiple copies of the same card (e.g., 5x Ace of Hearts)
+- [ ] **Banned tags** — allow banning skip tags (e.g., no Investment tags)
+- [ ] **Rules editor** — expose custom rules/modifiers as structured inputs (e.g., no rerolls, interest cap, etc.)
+- [ ] **Variable resolution in descriptions** — resolve #N# placeholders when displaying challenge JSON (currently shows raw placeholders like `#1# in #2# chance`)

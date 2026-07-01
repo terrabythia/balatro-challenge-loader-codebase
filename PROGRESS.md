@@ -68,7 +68,7 @@ Last updated: 2026-07-01
 | 4.8 | "Save Draft" button → POST /api/content | 🟢 | Integrated in header bar with loading/error states |
 | 4.9 | "Publish" button → POST /api/content/[code]/publish | 🟢 | Integrated in header bar (enabled after draft is saved) |
 | 4.10 | Test code display (copyable) after save | 🟢 | Code badge shown in header bar after save |
-| 4.11 | `/build?code=xxx` — edit existing draft | ⬜ | API endpoint ready (3.4) |
+| 4.11 | `/build?code=xxx` — edit existing draft | 🟢 | Loads draft from API, populates all fields including banned items |
 
 ---
 
@@ -138,11 +138,13 @@ Last updated: 2026-07-01
 ### What's built
 
 - **VPS**: Docker + Postgres running. Local: `docker compose -f docker-compose-local.yml` on port 5455.
-- **API**: All 7 endpoints implemented + 27/27 tests passing (`bun test`). Auth is hand-rolled JWT via `jose` — no NextAuth.
-- **Web**: Next.js + Bun + Tailwind. Pages: `login` (Discord OAuth → JWT session), `test-picker` (joker browser demo).
+- **API**: All 7 endpoints implemented + 27/27 tests passing (`bun test`). Auth is hand-rolled JWT via `jose` — no NextAuth. GET /api/content/:code now returns drafts to their owner. Key auto-prefixed with Discord user ID on save.
+- **Web**: Next.js + Bun + Tailwind. Pages: `login` (Discord OAuth → JWT session), `test-picker` (joker browser demo), `/build` (3-step challenge wizard).
+- **Builder**: Name + description (always visible), 3-step wizard (Starting State, Restrictions, Deck). Starting jokers/consumables support duplicates. Banned jokers/consumables/vouchers/blinds. Deck editor with sprite-based suit/rank toggles. Live JSON preview sidebar. Save Draft (POST→PUT on re-save), Publish, URL updates to ?code= on first save. Name validation (min 3 chars).
 - **Data**: Extraction script at `scripts/extract-game-data.ts` pulls 150 jokers, 52 consumables, 32 vouchers, 30 blinds + sprite atlases from Balatro.love into `web/public/data/` and `web/public/sprites/`.
-- **Components**: `ItemPicker` (reusable sprite-grid picker with portal tooltips, search, `renderTooltip`/`getTitle` props), `JokerPicker`, `ConsumablePicker`, `VoucherPicker` (dedicated wrapper components). `DescriptionText` (parses Balatro `{C:red}` tags and `#N#` placeholders from config into styled React elements).
-- **Storybook**: Storybook 10 + `@storybook/nextjs-vite` with Vitest + Playwright (Chromium). 4 stories, 8 tests passing. Run with `bun run storybook` or `npx vitest --project storybook run`.
+- **Components**: `ItemPicker` (reusable sprite-grid picker with portal tooltips, search, `renderTooltip`/`getTitle` props), `JokerPicker`, `ConsumablePicker`, `VoucherPicker` (dedicated wrapper components), `DeckEditor` (sprite-based 4×13 card grid with yes_suits/no_suits/yes_ranks/no_ranks/cards output). `DescriptionText` (parses Balatro `{C:red}` tags and `#N#` placeholders from config into styled React elements).
+- **Mod**: `challenge-loader` Lua mod (Steamodded) — loads JSON challenges from `challenges/` directory. Supports jokers, consumables, vouchers, deck (yes_suits/no_suits/yes_ranks/no_ranks/cards), restrictions (banned_cards, banned_other), and rules.modifiers (dollars, hands, discards, hand_size).
+- **Storybook**: Storybook 10 + `@storybook/nextjs-vite` with Vitest + Playwright (Chromium). 5 stories, 10 tests passing. Run with `bun run storybook` or `npx vitest --project storybook run`.
 
 ### Key files for next session
 
@@ -167,11 +169,10 @@ Last updated: 2026-07-01
 
 ### What to build next
 
-1. **`/build` page** — Challenge builder form. Integrate `ItemPicker` for jokers (task 4.1).
-2. Add consumable, voucher, and restriction pickers (same `ItemPicker`, different data).
-3. Live JSON preview panel.
-4. Save Draft / Publish buttons (API endpoints already done).
-5. Then Phase 5 (Hub + detail pages).
+1. **Phase 5 — Hub + Detail Pages**: `/hub` page (browse/search/sort), challenge detail page with ratings, landing page.
+2. **Phase 6 — Mod API Client**: luasocket HTTP client for in-game browsing/installing challenges.
+3. **Phase 7 — Mod UI**: Config tab with Playtest, Discover, and Installed sections.
+4. **Future enhancements**: (see PLAN.md → Future Enhancements)
 
 ### Gotchas
 
@@ -181,4 +182,6 @@ Last updated: 2026-07-01
 - Data refresh: `bun run scripts/extract-game-data.ts` (from project root)
 - Discord OAuth: needs `.env` with `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `JWT_SECRET`
 - `pg` needs `serverExternalPackages: ["pg"]` in `next.config.ts` for Turbopack
-- Bun test with `mock.module()` — exports are frozen, use mutable variables for auth state switching
+- **Deck editor**: Sprite atlas uses 8BitDeck.png at 1x (923×380, 71×95 cells). Suits: Hearts=row0, Clubs=row1, Diamonds=row2, Spades=row3. Ranks: A=col0...K=col12.
+- JSON deck format: `yes_suits`/`no_suits` use single letters (H/C/D/S), `yes_ranks`/`no_ranks` use single chars (A/2-9/T/J/Q/K), `cards` use `{s: "H", r: "A"}`.
+- Challenge JSON stat modifiers go in `rules.modifiers` array: `[{ id: "dollars", value: 20 }]`, NOT at the top level.

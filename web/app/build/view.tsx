@@ -694,7 +694,7 @@ export default function BuildView({
                   items={jokers}
                   descriptions={descriptions}
                   onSelect={(item) =>
-                    update({ jokers: toggleItem(state.jokers, item) })
+                    update({ jokers: [...state.jokers, item] })
                   }
                   placeholder="Add a joker…"
                 />
@@ -723,7 +723,7 @@ export default function BuildView({
                   items={consumables}
                   onSelect={(item) =>
                     update({
-                      consumables: toggleItem(state.consumables, item),
+                      consumables: [...state.consumables, item],
                     })
                   }
                   placeholder="Add a consumable…"
