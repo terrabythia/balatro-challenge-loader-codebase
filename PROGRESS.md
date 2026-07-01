@@ -58,16 +58,16 @@ Last updated: 2026-07-01
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| 4.1 | `/build` page — challenge builder form | ⬜ | Next: integrate ItemPicker, build form layout |
-| 4.2 | Joker picker (combobox with vanilla joker list) | 🟢 | `ItemPicker` component done — sprite grid + search + tooltips |
-| 4.3 | Consumable picker | ⬜ | Reuse `ItemPicker` with consumables data |
-| 4.4 | Voucher picker | ⬜ | Reuse `ItemPicker` with vouchers data |
-| 4.5 | Restrictions picker (blinds, cards, tags) | ⬜ | Reuse `ItemPicker` with blinds data |
+| 4.1 | `/build` page — challenge builder form | 🟢 | Full layout: name/desc, jokers, consumables, vouchers, deck, blind bans, JSON preview sidebar, Save Draft + Publish buttons |
+| 4.2 | Joker picker (combobox with vanilla joker list) | 🟢 | `JokerPicker` wrapper — sprite grid + tooltips with description text |
+| 4.3 | Consumable picker | 🟢 | `ConsumablePicker` wrapper — Tarot/Planet/Spectral, set-coloured tooltips |
+| 4.4 | Voucher picker | 🟢 | `VoucherPicker` wrapper |
+| 4.5 | Restrictions picker (blinds, cards, tags) | 🟢 | BossBlindPicker — toggle chips for 28 boss blinds |
 | 4.6 | Rules/modifiers editor | ⬜ | |
-| 4.7 | Live JSON preview panel | ⬜ | |
-| 4.8 | "Save Draft" button → POST /api/content | ⬜ | API endpoint ready (3.3) |
-| 4.9 | "Publish" button → POST /api/content/[code]/publish | ⬜ | API endpoint ready (3.5) |
-| 4.10 | Test code display (copyable) after save | ⬜ | |
+| 4.7 | Live JSON preview panel | 🟢 | Sidebar with auto-updating JSON + Copy button |
+| 4.8 | "Save Draft" button → POST /api/content | 🟢 | Integrated in header bar with loading/error states |
+| 4.9 | "Publish" button → POST /api/content/[code]/publish | 🟢 | Integrated in header bar (enabled after draft is saved) |
+| 4.10 | Test code display (copyable) after save | 🟢 | Code badge shown in header bar after save |
 | 4.11 | `/build?code=xxx` — edit existing draft | ⬜ | API endpoint ready (3.4) |
 
 ---
@@ -141,7 +141,8 @@ Last updated: 2026-07-01
 - **API**: All 7 endpoints implemented + 27/27 tests passing (`bun test`). Auth is hand-rolled JWT via `jose` — no NextAuth.
 - **Web**: Next.js + Bun + Tailwind. Pages: `login` (Discord OAuth → JWT session), `test-picker` (joker browser demo).
 - **Data**: Extraction script at `scripts/extract-game-data.ts` pulls 150 jokers, 52 consumables, 32 vouchers, 30 blinds + sprite atlases from Balatro.love into `web/public/data/` and `web/public/sprites/`.
-- **Components**: `ItemPicker` (reusable sprite-grid picker with portal tooltips, search, `renderTooltip`/`getTitle` props). `DescriptionText` (parses Balatro `{C:red}` tags and `#N#` placeholders from config into styled React elements).
+- **Components**: `ItemPicker` (reusable sprite-grid picker with portal tooltips, search, `renderTooltip`/`getTitle` props), `JokerPicker`, `ConsumablePicker`, `VoucherPicker` (dedicated wrapper components). `DescriptionText` (parses Balatro `{C:red}` tags and `#N#` placeholders from config into styled React elements).
+- **Storybook**: Storybook 10 + `@storybook/nextjs-vite` with Vitest + Playwright (Chromium). 4 stories, 8 tests passing. Run with `bun run storybook` or `npx vitest --project storybook run`.
 
 ### Key files for next session
 
