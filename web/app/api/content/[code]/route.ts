@@ -1,25 +1,45 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireAuth } from "@/lib/auth";
+import { requireAuth, getSession } from "@/lib/auth";
 
 // GET /api/content/:code — get single by code
+// Returns published content for everyone. Returns drafts to the owner when authenticated.
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
+  const session = await getSession();
 
-  const result = await db.query(
-    `SELECT c.*, u.username as author,
-            COALESCE(AVG(r.score), 0) as avg_rating,
-            COUNT(r.id)::int as rating_count
-     FROM content c
-     LEFT JOIN users u ON c.author_id = u.id
-     LEFT JOIN ratings r ON r.content_id = c.id
-     WHERE c.code = $1 AND c.status = 'published'
-     GROUP BY c.id, u.username`,
-    [code]
-  );
+  let result;
+  if (session) {
+    // Authenticated — can view own drafts + all published
+    result = await db.query(
+      `SELECT c.*, u.username as author,
+              COALESCE(AVG(r.score), 0) as avg_rating,
+              COUNT(r.id)::int as rating_count
+       FROM content c
+       LEFT JOIN users u ON c.author_id = u.id
+       LEFT JOIN ratings r ON r.content_id = c.id
+       WHERE c.code = $1
+         AND (c.status = 'published' OR (c.status = 'draft' AND c.author_id = $2))
+       GROUP BY c.id, u.username`,
+      [code, session.userId]
+    );
+  } else {
+    // Unauthenticated — only see published
+    result = await db.query(
+      `SELECT c.*, u.username as author,
+              COALESCE(AVG(r.score), 0) as avg_rating,
+              COUNT(r.id)::int as rating_count
+       FROM content c
+       LEFT JOIN users u ON c.author_id = u.id
+       LEFT JOIN ratings r ON r.content_id = c.id
+       WHERE c.code = $1 AND c.status = 'published'
+       GROUP BY c.id, u.username`,
+      [code]
+    );
+  }
 
   if (result.rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -71,8 +91,13 @@ export async function PUT(
     values.push(body.tags);
   }
   if (body.json_data !== undefined) {
+    // Prefix key with user ID for uniqueness
+    const prefixed = {
+      ...body.json_data,
+      key: session.userId + "_" + ((body.json_data as Record<string, unknown>).key || "untitled"),
+    };
     updates.push(`json_data = $${i++}::jsonb`);
-    values.push(JSON.stringify(body.json_data));
+    values.push(JSON.stringify(prefixed));
   }
 
   if (updates.length === 0) {

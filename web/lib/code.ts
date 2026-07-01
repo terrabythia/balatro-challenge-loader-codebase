@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 // Generates short test codes like "GL4SS-H0RDE"
 export function generateCode(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no I, O, 0, 1 (ambiguous)
-  const bytes = randomBytes(6);
+  const bytes = randomBytes(10);
   const parts: string[] = [];
 
   for (let i = 0; i < 2; i++) {

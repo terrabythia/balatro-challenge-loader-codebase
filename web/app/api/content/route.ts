@@ -76,6 +76,12 @@ export async function POST(req: NextRequest) {
 
   const code = generateCode();
 
+  // Prefix the challenge key with user ID for global uniqueness
+  const json_data = {
+    ...parsed.data.json_data,
+    key: session.userId + "_" + ((parsed.data.json_data as Record<string, unknown>).key || "untitled"),
+  };
+
   await db.query(
     `INSERT INTO content (type, code, author_id, name, description, tags, json_data)
      VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)`,
@@ -86,7 +92,7 @@ export async function POST(req: NextRequest) {
       parsed.data.name,
       parsed.data.description || null,
       parsed.data.tags || [],
-      JSON.stringify(parsed.data.json_data),
+      JSON.stringify(json_data),
     ]
   );
 

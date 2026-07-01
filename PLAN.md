@@ -969,3 +969,11 @@ The mod connects to the VPS on port 3001 (plain HTTP, no TLS). Nginx proxies thi
 - [ ] Web: rate limiting on API to prevent abuse?
 - [ ] Web: admin panel for moderation (report/remove inappropriate content)?
 - [ ] Discord application setup (client ID + secret from Discord Developer Portal)
+
+## Builder Validation (TODO)
+
+- [ ] **Name required** — prevent saving draft with empty name (show inline error)
+- [ ] **Boss blind limit** — warn when too many bosses are banned per ante range (≤ X banned to guarantee at least one valid boss per ante)
+- [ ] **Deck minimum** — warn if deck has very few cards (< ~20), since that may brick the run
+- [ ] **Duplicate joker check** — warn when the same joker ID appears multiple times (may cause issues with some jokers)
+- [ ] **Publish guard** — require at least one saved draft before publishing (already enforced via UI, add server-side too)

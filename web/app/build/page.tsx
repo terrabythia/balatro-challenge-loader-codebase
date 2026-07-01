@@ -2,7 +2,12 @@ import fs from "fs";
 import path from "path";
 import BuildView from "./view";
 
-export default function BuildPage() {
+export default async function BuildPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string }>;
+}) {
+  const { code } = await searchParams;
   const jokers = JSON.parse(
     fs.readFileSync(path.join(process.cwd(), "public", "data", "jokers.json"), "utf-8")
   );
@@ -26,6 +31,7 @@ export default function BuildPage() {
       consumables={consumables}
       vouchers={vouchers}
       blinds={blinds}
+      editCode={code ?? null}
     />
   );
 }
