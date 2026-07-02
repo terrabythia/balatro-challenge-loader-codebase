@@ -33,6 +33,12 @@ export default async function Nav() {
             >
               My Challenges
             </Link>
+            <Link
+              href="/install"
+              className="px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+            >
+              Install Mod
+            </Link>
           </div>
         </div>
         <div className="flex items-center gap-3">
