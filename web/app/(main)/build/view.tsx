@@ -819,7 +819,9 @@ export default function BuildView({
       {/* Header */}
       <div className="sticky top-14 z-10 bg-neutral-950/90 backdrop-blur border-b border-white/5 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold">Challenge Builder</h1>
+          <h1 className="text-lg font-bold">
+            Challenge: {state.name || "Untitled"}
+          </h1>
           {status && (
             <span
               className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
