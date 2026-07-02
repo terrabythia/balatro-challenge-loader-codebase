@@ -1,0 +1,12 @@
+{
+  "id": "challenge_loader",
+  "name": "Challenge Loader",
+  "prefix": "cl",
+  "author": ["Sander"],
+  "description": "Automatically loads custom challenges from JSON files in the challenges/ directory. No custom items — just challenges using existing game content.",
+  "main_file": "main.lua",
+  "version": "1.0.0",
+  "dependencies": [
+    "Steamodded (>=1.0.0~BETA-0312b)"
+  ]
+}

@@ -1,0 +1,18 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Add "Load Hub Challenge" button in a new row under "Start new challenge"
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''      {n=G.UIT.R, config={align = "cm", minw = 8.5, minh = 1.5, padding = 0.2}, nodes={
+        UIBox_button({id = from_game_over and 'from_game_over' or nil, label = {localize('b_new_challenge')}, button = 'challenge_list', minw = 4, scale = 0.4, minh = 0.6}),
+      }},'''
+position = "after"
+payload = '''
+      {n=G.UIT.R, config={align = "cm", minw = 8.5, minh = 1, padding = 0.2}, nodes={
+        UIBox_button({label = {'Load Hub Challenge'}, button = 'challenge_hub_add_open', colour = G.C.BLUE, minw = 4, scale = 0.4, minh = 0.6}),
+      }},'''
+match_indent = true

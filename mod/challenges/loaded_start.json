@@ -1,0 +1,19 @@
+{
+  "key": "loaded_start",
+  "name": "Loaded Start",
+  "jokers": [
+    { "id": "j_egg" },
+    { "id": "j_golden" }
+  ],
+  "consumeables": [
+    { "id": "c_hermit" },
+    { "id": "c_temperance" }
+  ],
+  "vouchers": [
+    { "id": "v_seed_money" },
+    { "id": "v_money_tree" }
+  ],
+  "deck": {
+    "type": "Challenge Deck"
+  }
+}

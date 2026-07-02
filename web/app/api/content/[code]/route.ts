@@ -4,16 +4,24 @@ import { requireAuth, getSession } from "@/lib/auth";
 
 // GET /api/content/:code — get single by code
 // Returns published content for everyone. Returns drafts to the owner when authenticated.
+// Mod can access drafts with ?secret= query param (matches MOD_API_SECRET env var).
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
   const { code } = await params;
   const session = await getSession();
+  const url = new URL(req.url);
+  const modSecret = url.searchParams.get("secret");
+  const isMod = modSecret !== null && modSecret === process.env.MOD_API_SECRET;
 
   let result;
-  if (session) {
-    // Authenticated — can view own drafts + all published
+  if (session || isMod) {
+    // Authenticated or mod — can view all published + own drafts (or all drafts if mod)
+    const statusFilter = isMod
+      ? "" // mod can see anything
+      : "AND (c.status = 'published' OR (c.status = 'draft' AND c.author_id = $2))";
+
     result = await db.query(
       `SELECT c.*, u.username as author,
               COALESCE(AVG(r.score), 0) as avg_rating,
@@ -21,10 +29,9 @@ export async function GET(
        FROM content c
        LEFT JOIN users u ON c.author_id = u.id
        LEFT JOIN ratings r ON r.content_id = c.id
-       WHERE c.code = $1
-         AND (c.status = 'published' OR (c.status = 'draft' AND c.author_id = $2))
+       WHERE c.code = $1 ${statusFilter}
        GROUP BY c.id, u.username`,
-      [code, session.userId]
+      isMod ? [code] : [code, session!.userId]
     );
   } else {
     // Unauthenticated — only see published

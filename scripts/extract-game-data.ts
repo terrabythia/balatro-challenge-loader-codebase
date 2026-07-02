@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file
 /**
  * Extracts Balatro game data (jokers, consumables, vouchers, blinds, tags)
  * from the game.lua file inside Balatro.love.

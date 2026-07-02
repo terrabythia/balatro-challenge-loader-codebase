@@ -1,0 +1,25 @@
+{
+  "key": "eternal_test",
+  "name": "Eternal Test",
+  "jokers": [
+    { "id": "j_joker", "eternal": true },
+    { "id": "j_greedy_joker", "eternal": true },
+    { "id": "j_lusty_joker", "eternal": true },
+    { "id": "j_wrathful_joker", "eternal": true },
+    { "id": "j_gluttenous_joker", "eternal": true }
+  ],
+  "restrictions": {
+    "banned_other": [
+      { "id": "bl_goad", "type": "blind" },
+      { "id": "bl_window", "type": "blind" },
+      { "id": "bl_head", "type": "blind" },
+      { "id": "bl_arm", "type": "blind" },
+      { "id": "bl_eye", "type": "blind" },
+      { "id": "bl_mouth", "type": "blind" },
+      { "id": "bl_fish", "type": "blind" }
+    ]
+  },
+  "deck": {
+    "type": "Challenge Deck"
+  }
+}

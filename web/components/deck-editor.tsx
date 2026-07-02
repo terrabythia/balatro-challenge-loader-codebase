@@ -531,4 +531,4 @@ export default function DeckEditor({ cards, onChange }: DeckEditorProps) {
   );
 }
 
-export { buildStandardDeck, SUITS, RANKS, plainInstance };
+export { buildStandardDeck, plainInstance };
