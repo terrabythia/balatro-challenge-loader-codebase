@@ -89,7 +89,11 @@ function slugify(name: string): string {
 }
 
 function buildChallengeJson(state: BuilderState): ChallengeJson {
-  const allStandard = state.deckCards.every((c) => c.count === 1);
+  const allStandard = state.deckCards.every(
+    (c) =>
+      c.count === 1 &&
+      c.instances.every((i) => !i.enhancement && !i.edition && !i.seal)
+  );
   const json: ChallengeJson = {
     key: slugify(state.name),
     name: state.name || "Untitled Challenge",
