@@ -618,6 +618,7 @@ export default function BuildView({
     bannedVouchers: [],
   });
   const [code, setCode] = useState<string | null>(editCode);
+  const [status, setStatus] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -697,6 +698,7 @@ export default function BuildView({
             .map((c) => vouchers.find((gv) => gv.id === c.id))
             .filter(Boolean) as PickerItem[],
         }));
+        setStatus(data.status);
       } catch {
         // draft not found / not yours — start fresh
       } finally {
@@ -765,9 +767,35 @@ export default function BuildView({
         method: "POST",
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to publish");
+      if (!res.ok) {
+        const detail = data.details?.fieldErrors
+          ? Object.values(data.details.fieldErrors).flat().join("; ")
+          : null;
+        throw new Error(detail || data.error || "Failed to publish");
+      }
+      setStatus("published");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Publish failed");
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  async function handleUnpublish() {
+    if (!code) return;
+    setError(null);
+    setPublishing(true);
+    try {
+      const res = await fetch(`/api/content/${code}/publish`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to unpublish");
+      setCode(data.code);
+      setStatus("draft");
+      router.replace(`/build?code=${data.code}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unpublish failed");
     } finally {
       setPublishing(false);
     }
@@ -776,8 +804,21 @@ export default function BuildView({
   return (
     <main className="min-h-screen bg-neutral-950 text-white">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-neutral-950/90 backdrop-blur border-b border-white/5 px-6 py-3 flex items-center justify-between">
-        <h1 className="text-lg font-bold">Challenge Builder</h1>
+      <div className="sticky top-14 z-10 bg-neutral-950/90 backdrop-blur border-b border-white/5 px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <h1 className="text-lg font-bold">Challenge Builder</h1>
+          {status && (
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                status === "published"
+                  ? "bg-emerald-500/10 text-emerald-400"
+                  : "bg-amber-500/10 text-amber-400"
+              }`}
+            >
+              {status === "published" ? "Published" : "Draft"}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           {code && (
             <span className="text-sm text-white/40 font-mono">
@@ -792,13 +833,23 @@ export default function BuildView({
           >
             {saving ? "Saving…" : "Save Draft"}
           </button>
-          <button
-            onClick={handlePublish}
-            disabled={publishing || !code}
-            className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            {publishing ? "Publishing…" : "Publish"}
-          </button>
+          {status === "published" ? (
+            <button
+              onClick={handleUnpublish}
+              disabled={publishing}
+              className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {publishing ? "Unpublishing…" : "Unpublish"}
+            </button>
+          ) : (
+            <button
+              onClick={handlePublish}
+              disabled={publishing || !code}
+              className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm font-medium transition-colors disabled:opacity-50"
+            >
+              {publishing ? "Publishing…" : "Publish"}
+            </button>
+          )}
         </div>
       </div>
 

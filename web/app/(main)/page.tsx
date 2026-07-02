@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60; // revalidate every 60 seconds
 
 interface ChallengeRow {
   code: string;
@@ -56,7 +56,9 @@ function ChallengeCard({ c }: { c: ChallengeRow }) {
         </div>
         <div className="flex shrink-0 items-center gap-3 text-xs text-white/30">
           {c.rating_count > 0 && (
-            <span title={`${c.avg_rating.toFixed(1)} stars (${c.rating_count})`}>
+            <span
+              title={`${c.avg_rating.toFixed(1)} stars (${c.rating_count})`}
+            >
               ★ {c.avg_rating.toFixed(1)}
             </span>
           )}
