@@ -4,9 +4,11 @@ import { requireAuth } from "@/lib/auth";
 import { challengeJsonSchema, hasChallengeContent } from "@/lib/schemas";
 import { generateCode } from "@/lib/code";
 
-// POST /api/content/:code/publish — publish a draft (auth required, author only)
+// POST /api/content/:code/publish
+// - Draft → published: validates JSON and transitions status
+// - Published → published: validates and updates json_data in-place
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ code: string }> },
 ) {
   let session;
@@ -18,27 +20,49 @@ export async function POST(
 
   const { code } = await params;
 
-  // Fetch the draft
-  const draft = await db.query(
+  const existing = await db.query(
     "SELECT json_data, author_id, status FROM content WHERE code = $1",
     [code],
   );
 
-  if (draft.rows.length === 0) {
+  if (existing.rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (draft.rows[0].author_id !== session.userId) {
+  if (existing.rows[0].author_id !== session.userId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  if (draft.rows[0].status !== "draft") {
-    return NextResponse.json(
-      { error: "Already published" },
-      { status: 409 },
-    );
+
+  const currentStatus = existing.rows[0].status as string;
+
+  // For published challenges, accept updated json_data in the body
+  let jsonData = existing.rows[0].json_data;
+  if (currentStatus === "published") {
+    const body = await req.json().catch(() => ({}));
+    if (body.json_data) {
+      jsonData = {
+        ...body.json_data,
+        key:
+          session.userId +
+          "_" +
+          ((body.json_data as Record<string, unknown>).key || "untitled"),
+      };
+    }
+    if (body.name) {
+      await db.query("UPDATE content SET name = $1 WHERE code = $2", [
+        body.name,
+        code,
+      ]);
+    }
+    if (body.description !== undefined) {
+      await db.query(
+        "UPDATE content SET description = $1 WHERE code = $2",
+        [body.description || null, code],
+      );
+    }
   }
 
   // Validate the JSON data
-  const parsed = challengeJsonSchema.safeParse(draft.rows[0].json_data);
+  const parsed = challengeJsonSchema.safeParse(jsonData);
   if (!parsed.success) {
     return NextResponse.json(
       { error: "Invalid challenge data", details: parsed.error.flatten() },
@@ -49,21 +73,32 @@ export async function POST(
   // Ensure the challenge has meaningful content
   if (!hasChallengeContent(parsed.data)) {
     return NextResponse.json(
-      { error: "Challenge has no content. Add jokers, deck changes, rules, or restrictions." },
+      {
+        error:
+          "Challenge has no content. Add jokers, deck changes, rules, or restrictions.",
+      },
       { status: 422 },
     );
   }
 
-  await db.query(
-    `UPDATE content SET status = 'published', updated_at = NOW()
-     WHERE code = $1`,
-    [code],
-  );
+  if (currentStatus === "published") {
+    await db.query(
+      `UPDATE content SET json_data = $1::jsonb, updated_at = NOW()
+       WHERE code = $2`,
+      [JSON.stringify(jsonData), code],
+    );
+  } else {
+    await db.query(
+      `UPDATE content SET status = 'published', updated_at = NOW()
+       WHERE code = $1`,
+      [code],
+    );
+  }
 
   return NextResponse.json({ code });
 }
 
-// POST /api/content/:code/unpublish — unpublish back to draft (auth required, author only)
+// DELETE /api/content/:code/publish — unpublish back to draft
 // Generates a new code so old shared links 404.
 export async function DELETE(
   _req: NextRequest,
@@ -122,7 +157,6 @@ export async function DELETE(
     }
   }
 
-  // Unreachable
   return NextResponse.json(
     { error: "Failed to generate unique code" },
     { status: 500 },

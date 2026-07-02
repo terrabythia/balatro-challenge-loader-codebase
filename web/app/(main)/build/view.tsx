@@ -622,6 +622,7 @@ export default function BuildView({
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
   const [loadingDraft, setLoadingDraft] = useState(!!editCode);
   const router = useRouter();
   const nameValid = state.name.trim().length >= 3;
@@ -763,8 +764,19 @@ export default function BuildView({
     setError(null);
     setPublishing(true);
     try {
+      const payload =
+        status === "published"
+          ? {
+              name: state.name || "Untitled Challenge",
+              description: state.description || undefined,
+              json_data: preview,
+            }
+          : undefined;
+
       const res = await fetch(`/api/content/${code}/publish`, {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload ? JSON.stringify(payload) : undefined,
       });
       const data = await res.json();
       if (!res.ok) {
@@ -783,6 +795,7 @@ export default function BuildView({
 
   async function handleUnpublish() {
     if (!code) return;
+    setShowUnpublishConfirm(false);
     setError(null);
     setPublishing(true);
     try {
@@ -826,21 +839,32 @@ export default function BuildView({
             </span>
           )}
           {error && <span className="text-sm text-red-400">{error}</span>}
-          <button
-            onClick={handleSaveDraft}
-            disabled={saving || !nameValid}
-            className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-medium transition-colors disabled:opacity-50"
-          >
-            {saving ? "Saving…" : "Save Draft"}
-          </button>
-          {status === "published" ? (
+          {status !== "published" && (
             <button
-              onClick={handleUnpublish}
-              disabled={publishing}
-              className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-sm font-medium transition-colors disabled:opacity-50"
+              onClick={handleSaveDraft}
+              disabled={saving || !nameValid}
+              className="px-4 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-medium transition-colors disabled:opacity-50"
             >
-              {publishing ? "Unpublishing…" : "Unpublish"}
+              {saving ? "Saving…" : "Save Draft"}
             </button>
+          )}
+          {status === "published" ? (
+            <>
+              <button
+                onClick={handlePublish}
+                disabled={publishing}
+                className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                {publishing ? "Saving…" : "Save Changes"}
+              </button>
+              <button
+                onClick={() => setShowUnpublishConfirm(true)}
+                disabled={publishing}
+                className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-sm font-medium transition-colors disabled:opacity-50"
+              >
+                Unpublish
+              </button>
+            </>
           ) : (
             <button
               onClick={handlePublish}
@@ -1355,6 +1379,37 @@ export default function BuildView({
           </button>
         </div>
       </div>
+
+      {/* Unpublish confirmation dialog */}
+      {showUnpublishConfirm &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-sm rounded-xl border border-white/10 bg-neutral-900 p-6 shadow-2xl">
+              <h2 className="text-lg font-semibold">Unpublish Challenge?</h2>
+              <p className="mt-3 text-sm leading-relaxed text-white/60">
+                This will change the challenge code and make it{" "}
+                <strong className="text-white/80">completely unavailable</strong>{" "}
+                to anyone who has the current link. You can re-publish it
+                later, but the old code will never work again.
+              </p>
+              <div className="mt-6 flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowUnpublishConfirm(false)}
+                  className="px-4 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUnpublish}
+                  className="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-sm font-medium transition-colors"
+                >
+                  Unpublish
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
     </main>
   );
 }
