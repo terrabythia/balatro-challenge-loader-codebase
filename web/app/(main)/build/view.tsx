@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import JokerPicker from "@/components/joker-picker";
@@ -22,6 +22,12 @@ interface BuilderData {
   vouchers: PickerItem[];
   blinds: PickerItem[];
   editCode: string | null;
+  initialDraft: {
+    name: string;
+    description: string | null;
+    status: string;
+    json_data: Record<string, unknown>;
+  } | null;
 }
 
 interface ChallengeJson {
@@ -92,7 +98,7 @@ function buildChallengeJson(state: BuilderState): ChallengeJson {
   const allStandard = state.deckCards.every(
     (c) =>
       c.count === 1 &&
-      c.instances.every((i) => !i.enhancement && !i.edition && !i.seal)
+      c.instances.every((i) => !i.enhancement && !i.edition && !i.seal),
   );
   const json: ChallengeJson = {
     key: slugify(state.name),
@@ -188,8 +194,8 @@ function buildChallengeJson(state: BuilderState): ChallengeJson {
     }
 
     const hasDuplicates = state.deckCards.some((c) => c.count > 1);
-    const hasCustomCards = state.deckCards.some(
-      (c) => c.instances?.some((i) => i.enhancement || i.edition || i.seal)
+    const hasCustomCards = state.deckCards.some((c) =>
+      c.instances?.some((i) => i.enhancement || i.edition || i.seal),
     );
 
     const deck: ChallengeJson["deck"] = { type: "Challenge Deck" };
@@ -200,7 +206,13 @@ function buildChallengeJson(state: BuilderState): ChallengeJson {
       for (const c of state.deckCards) {
         const insts = c.instances || [];
         for (const inst of insts) {
-          const entry: { s: string; r: string; e?: string; d?: string; g?: string } = {
+          const entry: {
+            s: string;
+            r: string;
+            e?: string;
+            d?: string;
+            g?: string;
+          } = {
             s: suitShort[c.suit],
             r: rankShort[c.rank],
           };
@@ -308,7 +320,10 @@ function applyDeckFilters(deck: {
   // Handle explicit cards array
   if (deck.cards && deck.cards.length > 0) {
     // Group cards by suit+rank, collect instances
-    const grouped: Record<string, { count: number; instances: CardInstance[] }> = {};
+    const grouped: Record<
+      string,
+      { count: number; instances: CardInstance[] }
+    > = {};
     for (const entry of deck.cards) {
       const suit = suitMap[entry.s];
       const rank = rankMap[entry.r];
@@ -343,14 +358,10 @@ function applyDeckFilters(deck: {
       ([, v]) => v === c.rank,
     )?.[0];
     let count = 1;
-    if (deck.yes_suits && suitShort && !deck.yes_suits[suitShort])
-      count = 0;
-    if (deck.no_suits && suitShort && deck.no_suits[suitShort])
-      count = 0;
-    if (deck.yes_ranks && rankShort && !deck.yes_ranks[rankShort])
-      count = 0;
-    if (deck.no_ranks && rankShort && deck.no_ranks[rankShort])
-      count = 0;
+    if (deck.yes_suits && suitShort && !deck.yes_suits[suitShort]) count = 0;
+    if (deck.no_suits && suitShort && deck.no_suits[suitShort]) count = 0;
+    if (deck.yes_ranks && rankShort && !deck.yes_ranks[rankShort]) count = 0;
+    if (deck.no_ranks && rankShort && deck.no_ranks[rankShort]) count = 0;
     return { ...c, count };
   });
 }
@@ -599,117 +610,106 @@ export default function BuildView({
   vouchers,
   blinds,
   editCode,
+  initialDraft,
 }: BuilderData) {
+  // Build initial state from server-loaded draft (no loading flash)
+  function buildInitialState(): BuilderState {
+    if (!initialDraft) {
+      return {
+        name: "",
+        description: "",
+        dollars: 4,
+        hands: 4,
+        discards: 3,
+        handSize: 8,
+        jokers: [],
+        consumables: [],
+        vouchers: [],
+        deckCards: buildStandardDeck(),
+        bannedBlinds: [],
+        bannedJokers: [],
+        bannedConsumables: [],
+        bannedVouchers: [],
+      };
+    }
+
+    const json = initialDraft.json_data as {
+      key?: string;
+      name?: string;
+      jokers?: { id: string; edition?: string; eternal?: boolean }[];
+      consumeables?: { id: string }[];
+      vouchers?: { id: string }[];
+      dollars?: number;
+      hands?: number;
+      discards?: number;
+      hand_size?: number;
+      deck?: {
+        yes_suits?: Record<string, true>;
+        no_suits?: Record<string, true>;
+        yes_ranks?: Record<string, true>;
+        no_ranks?: Record<string, true>;
+        cards?: { s: string; r: string; e?: string; d?: string; g?: string }[];
+      };
+      restrictions?: {
+        banned_cards?: { id: string }[];
+        banned_other?: { id: string; type: string }[];
+      };
+    };
+
+    return {
+      name: initialDraft.name || "",
+      description: initialDraft.description || "",
+      dollars: json.dollars ?? 4,
+      hands: json.hands ?? 4,
+      discards: json.discards ?? 3,
+      handSize: json.hand_size ?? 8,
+      jokers: (json.jokers || [])
+        .map((j) => {
+          const item = jokers.find((gj) => gj.id === j.id);
+          if (!item) return null;
+          return {
+            uid: nextJokerUid(),
+            item,
+            edition: j.edition || null,
+            eternal: !!j.eternal,
+          };
+        })
+        .filter(Boolean) as SelectedJoker[],
+      consumables: (json.consumeables || [])
+        .map((c) => consumables.find((gc) => gc.id === c.id))
+        .filter(Boolean) as PickerItem[],
+      vouchers: (json.vouchers || [])
+        .map((v) => vouchers.find((gv) => gv.id === v.id))
+        .filter(Boolean) as PickerItem[],
+      deckCards: applyDeckFilters(json.deck || {}),
+      bannedBlinds: (json.restrictions?.banned_other || [])
+        .filter((b) => b.type === "blind")
+        .map((b) => blinds.find((gb) => gb.id === b.id))
+        .filter(Boolean) as PickerItem[],
+      bannedJokers: (json.restrictions?.banned_cards || [])
+        .map((c) => jokers.find((gj) => gj.id === c.id))
+        .filter(Boolean) as PickerItem[],
+      bannedConsumables: (json.restrictions?.banned_cards || [])
+        .map((c) => consumables.find((gc) => gc.id === c.id))
+        .filter(Boolean) as PickerItem[],
+      bannedVouchers: (json.restrictions?.banned_cards || [])
+        .map((c) => vouchers.find((gv) => gv.id === c.id))
+        .filter(Boolean) as PickerItem[],
+    };
+  }
+
   const [step, setStep] = useState(0);
-  const [state, setState] = useState<BuilderState>({
-    name: "",
-    description: "",
-    dollars: 4,
-    hands: 4,
-    discards: 3,
-    handSize: 8,
-    jokers: [],
-    consumables: [],
-    vouchers: [],
-    deckCards: buildStandardDeck(),
-    bannedBlinds: [],
-    bannedJokers: [],
-    bannedConsumables: [],
-    bannedVouchers: [],
-  });
+  const [state, setState] = useState<BuilderState>(buildInitialState);
   const [code, setCode] = useState<string | null>(editCode);
-  const [status, setStatus] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(
+    initialDraft?.status ?? null,
+  );
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
-  const [loadingDraft, setLoadingDraft] = useState(!!editCode);
   const router = useRouter();
   const nameValid = state.name.trim().length >= 3;
-
-  // Load existing draft by code
-  useEffect(() => {
-    if (!editCode) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`/api/content/${editCode}`);
-        const data = await res.json();
-        if (!res.ok || cancelled) return;
-        const json = data.json_data as {
-          key?: string;
-          name?: string;
-          jokers?: { id: string; edition?: string; eternal?: boolean }[];
-          consumeables?: { id: string }[];
-          vouchers?: { id: string }[];
-          dollars?: number;
-          hands?: number;
-          discards?: number;
-          hand_size?: number;
-          deck?: {
-            yes_suits?: Record<string, true>;
-            no_suits?: Record<string, true>;
-            yes_ranks?: Record<string, true>;
-            no_ranks?: Record<string, true>;
-          };
-          restrictions?: {
-            banned_cards?: { id: string }[];
-            banned_other?: { id: string; type: string }[];
-          };
-        };
-
-        setState((s) => ({
-          ...s,
-          name: data.name || "",
-          description: data.description || "",
-          dollars: json.dollars ?? 4,
-          hands: json.hands ?? 4,
-          discards: json.discards ?? 3,
-          handSize: json.hand_size ?? 8,
-          jokers: (json.jokers || [])
-            .map((j) => {
-              const item = jokers.find((gj) => gj.id === j.id);
-              if (!item) return null;
-              return {
-                uid: nextJokerUid(),
-                item,
-                edition: j.edition || null,
-                eternal: !!j.eternal,
-              };
-            })
-            .filter(Boolean) as SelectedJoker[],
-          consumables: (json.consumeables || [])
-            .map((c) => consumables.find((gc) => gc.id === c.id))
-            .filter(Boolean) as PickerItem[],
-          vouchers: (json.vouchers || [])
-            .map((v) => vouchers.find((gv) => gv.id === v.id))
-            .filter(Boolean) as PickerItem[],
-          deckCards: applyDeckFilters(json.deck || {}),
-          bannedBlinds: (json.restrictions?.banned_other || [])
-            .filter((b) => b.type === "blind")
-            .map((b) => blinds.find((gb) => gb.id === b.id))
-            .filter(Boolean) as PickerItem[],
-          bannedJokers: (json.restrictions?.banned_cards || [])
-            .map((c) => jokers.find((gj) => gj.id === c.id))
-            .filter(Boolean) as PickerItem[],
-          bannedConsumables: (json.restrictions?.banned_cards || [])
-            .map((c) => consumables.find((gc) => gc.id === c.id))
-            .filter(Boolean) as PickerItem[],
-          bannedVouchers: (json.restrictions?.banned_cards || [])
-            .map((c) => vouchers.find((gv) => gv.id === c.id))
-            .filter(Boolean) as PickerItem[],
-        }));
-        setStatus(data.status);
-      } catch {
-        // draft not found / not yours — start fresh
-      } finally {
-        if (!cancelled) setLoadingDraft(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [editCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const preview = useMemo(() => buildChallengeJson(state), [state]);
 
@@ -855,7 +855,7 @@ export default function BuildView({
                 disabled={publishing}
                 className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm font-medium transition-colors disabled:opacity-50"
               >
-                {publishing ? "Saving…" : "Save Changes"}
+                {publishing ? "Saving…" : "Publish Changes"}
               </button>
               <button
                 onClick={() => setShowUnpublishConfirm(true)}
@@ -937,10 +937,6 @@ export default function BuildView({
               </div>
             ))}
           </div>
-
-          {loadingDraft && (
-            <p className="text-sm text-white/40 mb-4">Loading draft…</p>
-          )}
 
           {/* Step 1: Starting State */}
           {step === 0 && (
@@ -1388,9 +1384,11 @@ export default function BuildView({
               <h2 className="text-lg font-semibold">Unpublish Challenge?</h2>
               <p className="mt-3 text-sm leading-relaxed text-white/60">
                 This will change the challenge code and make it{" "}
-                <strong className="text-white/80">completely unavailable</strong>{" "}
-                to anyone who has the current link. You can re-publish it
-                later, but the old code will never work again.
+                <strong className="text-white/80">
+                  completely unavailable
+                </strong>{" "}
+                to anyone who has the current link. You can re-publish it later,
+                but the old code will never work again.
               </p>
               <div className="mt-6 flex gap-3 justify-end">
                 <button
