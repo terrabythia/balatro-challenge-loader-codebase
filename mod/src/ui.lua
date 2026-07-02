@@ -1,22 +1,16 @@
 --- Challenge Hub UI
---- Adds a "Load Hub Challenge" button to the Challenges tab and handles
---- the text input flow for entering challenge codes. On "Play", fetches
---- the challenge and starts a run immediately.
+--- "Load Hub Challenge" button on the Challenges tab, code input overlay,
+--- and challenge fetch + start-run flow.
 
 return function()
   sendInfoMessage("Challenge Hub: UI module loaded", "Challenge Hub")
 
-  -- ============================================================
-  -- State
-  -- ============================================================
-  -- Ensure common global tables exist to avoid runtime errors when mods
-  -- are loaded early or the game's globals haven't been fully initialized.
+  -- Ensure common globals exist
   if not G then G = {} end
   G.FUNCS = G.FUNCS or {}
   G.UIDEF = G.UIDEF or {}
   G.C = G.C or {}
   G.C.UI = G.C.UI or {}
-  -- Provide safe fallback colours if the game's colour constants are missing
   G.C.WHITE = G.C.WHITE or {255,255,255}
   G.C.RED = G.C.RED or {255,0,0}
   G.C.BLUE = G.C.BLUE or {0,122,255}
@@ -28,57 +22,16 @@ return function()
   G.CHALLENGE_HUB_STATUS_COLOUR = G.CHALLENGE_HUB_STATUS_COLOUR or G.C.WHITE
 
   -- ============================================================
-  -- Callback: open the "Load Hub Challenge" text input screen
+  -- Open overlay
   -- ============================================================
   function G.FUNCS.challenge_hub_add_open(e)
     G.CHALLENGE_HUB_CODE = ""
     G.CHALLENGE_HUB_STATUS = ""
-    -- Debug: confirm callback is invoked
-    sendInfoMessage("Challenge Hub: Opening overlay", "Challenge Hub")
-    -- Push a new overlay menu on top of the challenges screen,
-    -- just like multiplayer does for "create lobby" / "join lobby".
-    local def = G.UIDEF.challenge_hub_add_overlay()
-    -- Inspect the returned UI definition for non-string text fields that may crash getWidth.
-    local function scan_node(node, path)
-      if type(node) ~= 'table' then return end
-      local path = path or "root"
-      if node.config and type(node.config) == "table" then
-        for k, v in pairs(node.config) do
-          if k == "text" or k == "prompt_text" or k == "label" or k == "ref_value" or k == "ref_table" then
-            local t = type(v)
-            sendInfoMessage(("Challenge Hub UI inspect: %s.config.%s => %s"):format(path, k, t), "Challenge Hub")
-            if k == "ref_table" and node.config.ref_value and type(node.config.ref_value) == "string" then
-              local ok, val = pcall(function() return v[node.config.ref_value] end)
-              if ok then
-                sendInfoMessage(("Challenge Hub UI inspect: %s.ref_value '%s' => %s"):format(path, node.config.ref_value, type(val)), "Challenge Hub")
-              end
-            end
-            if (k == "text" or k == "prompt_text") and type(v) == "table" then
-              -- Attempt to coerce simple text tables to a string to avoid engine error.
-              local ok, joined = pcall(function() return table.concat(v, " ") end)
-              if ok and type(joined) == "string" then
-                sendInfoMessage(("Challenge Hub UI: coerced %s at %s to string"):format(k, path), "Challenge Hub")
-                node.config[k] = joined
-              end
-            end
-          end
-        end
-      end
-      -- Recurse into known child arrays
-      for _, key in ipairs({"nodes", "contents", "children"}) do
-        if node[key] and type(node[key]) == "table" then
-          for i, child in ipairs(node[key]) do
-            scan_node(child, path .. "." .. key .. "[" .. tostring(i) .. "]")
-          end
-        end
-      end
-    end
-    scan_node(def)
-    G.FUNCS.overlay_menu({ definition = def })
+    G.FUNCS.overlay_menu({ definition = G.UIDEF.challenge_hub_add_overlay() })
   end
 
   -- ============================================================
-  -- Callback: close overlay and return to challenges tab
+  -- Close overlay
   -- ============================================================
   function G.FUNCS.challenge_hub_add_back(e)
     G.CHALLENGE_HUB_STATUS = ""
@@ -86,41 +39,52 @@ return function()
   end
 
   -- ============================================================
-  -- Callback: paste from clipboard into the code input
+  -- Paste from clipboard via text input simulation
+  -- (same approach as base game's G.FUNCS.paste_seed)
   -- ============================================================
   function G.FUNCS.challenge_hub_paste(e)
-    -- Try to read the clipboard safely
-    local ok, clip = pcall(function()
-      if love and love.system and love.system.getClipboardText then
-        return love.system.getClipboardText()
-      end
-      return nil
-    end)
+    local text_input_e = e.UIBox:get_UIE_by_ID("text_input")
+    if not text_input_e then
+      G.CHALLENGE_HUB_STATUS = "Text input unavailable"
+      G.CHALLENGE_HUB_STATUS_COLOUR = G.C.RED
+      return
+    end
 
-    if not ok or not clip or clip == "" then
+    local clip = nil
+    if love and love.system and love.system.getClipboardText then
+      clip = love.system.getClipboardText()
+    end
+
+    if not clip or clip == "" then
       G.CHALLENGE_HUB_STATUS = "Clipboard empty"
       G.CHALLENGE_HUB_STATUS_COLOUR = G.C.RED
       return
     end
 
-    -- Normalize pasted value like the existing Play handler
-    local code = tostring(clip):upper():gsub("%s+", "")
-    if #code == 10 and not code:find("-") then
-      code = code:sub(1,5) .. "-" .. code:sub(6,10)
+    local code = clip:upper():gsub("%s+", ""):gsub("-", "")
+
+    G.CONTROLLER.text_input_hook = text_input_e.children[1].children[1]
+    G.CONTROLLER.text_input_id = "text_input"
+
+    for _ = 1, 7 do
+      G.FUNCS.text_input_key({ key = "right" })
+    end
+    for _ = 1, 7 do
+      G.FUNCS.text_input_key({ key = "backspace" })
     end
 
-    G.CHALLENGE_HUB_CODE = code
-    G.CHALLENGE_HUB_STATUS = "Pasted code"
-    G.CHALLENGE_HUB_STATUS_COLOUR = G.C.WHITE
-    sendInfoMessage("Challenge Hub: Pasted code '" .. tostring(code) .. "'", "Challenge Hub")
+    local len = math.min(#code, 7)
+    for i = 1, len do
+      G.FUNCS.text_input_key({ key = code:sub(i, i) })
+    end
+
+    G.FUNCS.text_input_key({ key = "return" })
   end
 
   -- ============================================================
-  -- Callback: fetch challenge by code and start run immediately
+  -- Fetch challenge and start run
   -- ============================================================
   function G.FUNCS.challenge_hub_add_play(e)
-    -- Debug: indicate the Play callback was invoked
-    sendInfoMessage("Challenge Hub: Play pressed", "Challenge Hub")
     local code = G.CHALLENGE_HUB_CODE
     if not code or code == "" then
       G.CHALLENGE_HUB_STATUS = "Please enter a code"
@@ -128,19 +92,12 @@ return function()
       return
     end
 
-    -- Normalize code: uppercase, remove whitespace
-    code = code:upper():gsub("%s+", "")
-
-    -- Auto-insert dash if missing (e.g. "GL4SSH0RDE" -> "GL4SS-H0RDE")
-    if #code == 10 and not code:find("-") then
-      code = code:sub(1, 5) .. "-" .. code:sub(6, 10)
-    end
+    code = code:upper():gsub("%s+", ""):gsub("-", "")
 
     G.CHALLENGE_HUB_CODE = code
     G.CHALLENGE_HUB_STATUS = "Downloading..."
     G.CHALLENGE_HUB_STATUS_COLOUR = G.C.WHITE
 
-    -- Fetch from API
     local data, err = HubAPI.get_by_code(code)
 
     if not data then
@@ -156,7 +113,6 @@ return function()
       return
     end
 
-    -- Build challenge table for direct play (not persistent)
     local challenge = {
       id = challenge_data.key or "hub_challenge",
       name = challenge_data.name or challenge_data.key or "Hub Challenge",
@@ -168,23 +124,23 @@ return function()
       rules = challenge_data.rules or {},
     }
 
-    -- Start the run immediately at stake 1
-    G.FUNCS.start_run(e, { stake = 1, challenge = challenge })
+    -- Register in SMODS.Challenges so scoring targets resolve.
+    -- Proxy keeps calculate() out of the plain challenge table
+    -- (functions break LÖVE Channel:push serialization on save).
+    local proxy = { id = challenge.id }
+    setmetatable(proxy, { __index = challenge })
+    proxy.calculate = function(self, context) end
+    SMODS.Challenges[challenge.id] = proxy
 
-    sendInfoMessage(
-      "Challenge Hub: Playing '" .. (challenge_data.name or code) .. "'",
-      "Challenge Hub"
-    )
+    G.FUNCS.start_run(e, { stake = 1, challenge = challenge })
   end
 
   -- ============================================================
-  -- UI: overlay text input screen for challenge code
+  -- Overlay UI definition
   -- ============================================================
   function G.UIDEF.challenge_hub_add_overlay()
     G.CHALLENGE_HUB_CODE = G.CHALLENGE_HUB_CODE or ""
 
-    -- Use create_UIBox_generic_options so we get a proper overlay with
-    -- a built-in back button, matching multiplayer's join_lobby pattern.
     return create_UIBox_generic_options({
       back_func = "challenge_hub_add_back",
       back_label = { "Back" },
@@ -204,7 +160,6 @@ return function()
             },
           },
         },
-        -- Code format hint
         {
           n = G.UIT.R,
           config = { align = "cm", padding = 0.1 },
@@ -212,36 +167,41 @@ return function()
             {
               n = G.UIT.T,
               config = {
-                text = "Enter the 10-character code (e.g. GL4SS-H0RDE)",
+                text = "Enter the 7-character code (e.g. GL4SSH0R)",
                 scale = 0.35,
                 colour = G.C.UI.TEXT_INACTIVE,
               },
             },
           },
         },
-        -- Text input + Paste button
         {
           n = G.UIT.R,
           config = { align = "cm", padding = 0.2 },
           nodes = {
             create_text_input({
               w = 4.2,
-              max_length = 11,
+              max_length = 7,
               all_caps = true,
               prompt_text = "Code...",
               ref_table = G,
               ref_value = "CHALLENGE_HUB_CODE",
             }),
+          },
+        },
+        {
+          n = G.UIT.R,
+          config = { align = "cm", padding = 0.1 },
+          nodes = {
             UIBox_button({
               label = { "Paste" },
               button = "challenge_hub_paste",
               colour = G.C.BLUE,
-              minw = 1.2,
-              scale = 0.35,
+              minw = 1.5,
+              scale = 0.3,
+              col = true,
             }),
           },
         },
-        -- Status message
         {
           n = G.UIT.R,
           config = { align = "cm", padding = 0.1, minh = 0.5 },
@@ -258,7 +218,6 @@ return function()
             },
           },
         },
-        -- Play button
         {
           n = G.UIT.R,
           config = { align = "cm", padding = 0.3 },

@@ -40,14 +40,14 @@ export async function GET(req: NextRequest) {
        CASE WHEN $3 = 'new' THEN c.created_at END DESC,
        CASE WHEN $3 = 'downloads' THEN c.downloads END DESC
      LIMIT $4 OFFSET $5`,
-    [type, search, sort, limit, offset]
+    [type, search, sort, limit, offset],
   );
 
   const count = await db.query(
     `SELECT COUNT(*)::int as total FROM content
      WHERE status = 'published' AND type = $1
        AND ($2 = '' OR name ILIKE '%' || $2 || '%')`,
-    [type, search]
+    [type, search],
   );
 
   return NextResponse.json({
@@ -70,31 +70,55 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.flatten() },
-      { status: 400 }
+      { status: 400 },
     );
   }
-
-  const code = generateCode();
 
   // Prefix the challenge key with user ID for global uniqueness
   const json_data = {
     ...parsed.data.json_data,
-    key: session.userId + "_" + ((parsed.data.json_data as Record<string, unknown>).key || "untitled"),
+    key:
+      session.userId +
+      "_" +
+      ((parsed.data.json_data as Record<string, unknown>).key || "untitled"),
   };
 
-  await db.query(
-    `INSERT INTO content (type, code, author_id, name, description, tags, json_data)
-     VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)`,
-    [
-      parsed.data.type,
-      code,
-      session.userId,
-      parsed.data.name,
-      parsed.data.description || null,
-      parsed.data.tags || [],
-      JSON.stringify(json_data),
-    ]
-  );
+  // Generate a unique code with collision retry
+  let code: string;
+  const maxRetries = 5;
 
-  return NextResponse.json({ code }, { status: 201 });
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    code = generateCode();
+    try {
+      await db.query(
+        `INSERT INTO content (type, code, author_id, name, description, tags, json_data)
+         VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)`,
+        [
+          parsed.data.type,
+          code,
+          session.userId,
+          parsed.data.name,
+          parsed.data.description || null,
+          parsed.data.tags || [],
+          JSON.stringify(json_data),
+        ],
+      );
+      return NextResponse.json({ code }, { status: 201 });
+    } catch (err: unknown) {
+      // PostgreSQL unique-violation code = 23505
+      const isUniqueViolation =
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code: string }).code === "23505";
+
+      if (!isUniqueViolation || attempt === maxRetries - 1) {
+        throw err;
+      }
+      // Collision — loop generates a new code
+    }
+  }
+
+  // Unreachable (TypeScript needs it)
+  return NextResponse.json({ error: "Failed to generate unique code" }, { status: 500 });
 }

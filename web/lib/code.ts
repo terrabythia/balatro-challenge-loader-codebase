@@ -1,18 +1,15 @@
 import { randomBytes } from "crypto";
 
-// Generates short test codes like "GL4SS-H0RDE"
+// 30-char alphabet (no I, O, 0, 1 — ambiguous in fonts).
+// 7 chars = 30^7 ≈ 21.9B combinations — collision-safe for community-scale usage.
 export function generateCode(): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no I, O, 0, 1 (ambiguous)
-  const bytes = randomBytes(10);
-  const parts: string[] = [];
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = randomBytes(7);
+  let code = "";
 
-  for (let i = 0; i < 2; i++) {
-    let part = "";
-    for (let j = 0; j < 5; j++) {
-      part += chars[bytes[i * 5 + j] % chars.length];
-    }
-    parts.push(part);
+  for (let i = 0; i < 7; i++) {
+    code += chars[bytes[i] % chars.length];
   }
 
-  return parts.join("-");
+  return code;
 }

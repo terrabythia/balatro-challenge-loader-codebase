@@ -99,7 +99,7 @@ function buildChallengeJson(state: BuilderState): ChallengeJson {
     name: state.name || "Untitled Challenge",
     jokers: state.jokers.map((j) => {
       const out: ChallengeJson["jokers"][number] = { id: j.item.id };
-      if (j.edition) out.edition = j.edition;
+      if (j.edition) out.edition = j.edition.replace(/^e_/, "");
       if (j.eternal) out.eternal = true;
       return out;
     }),
@@ -205,7 +205,7 @@ function buildChallengeJson(state: BuilderState): ChallengeJson {
             r: rankShort[c.rank],
           };
           if (inst.enhancement) entry.e = inst.enhancement;
-          if (inst.edition) entry.d = inst.edition;
+          if (inst.edition) entry.d = inst.edition.replace(/^e_/, "");
           if (inst.seal) entry.g = inst.seal;
           deck.cards.push(entry);
         }
