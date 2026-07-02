@@ -51,7 +51,7 @@ export default function TestPickerView({ jokers, descriptions }: Props) {
               <div className="text-xs space-y-1 min-w-36 max-w-56">
                 <p className="font-semibold text-sm text-white">{item.name}</p>
                 <p className={RARITY_COLORS[rarity] || "text-white/60"}>
-                  {RARITY_LABELS[rarity] || "Unknown"} · ${item.cost}
+                  {RARITY_LABELS[rarity] || "Unknown"} · ${String(item.cost)}
                 </p>
                 {descLines.length > 0 && (
                   <p className="leading-relaxed text-balance">

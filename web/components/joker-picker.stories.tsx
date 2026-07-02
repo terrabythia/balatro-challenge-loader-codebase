@@ -75,7 +75,7 @@ export const Default: Story = {};
 export const FilteredSearch: Story = {
   play: async ({ canvas, userEvent }) => {
     const input = canvas.getByPlaceholderText("Search jokers...");
-    await userEvent.type(input, "Joker", { delay: 10 });
+    await userEvent.type(input, "Joker");
     // Should only show "Joker" and the suit jokers
     await expect(canvas.getByText("Joker")).toBeVisible();
     await expect(canvas.getByText("Greedy Joker")).toBeVisible();

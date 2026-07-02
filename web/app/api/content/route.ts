@@ -10,7 +10,7 @@ const createSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(500).optional(),
   tags: z.array(z.string()).max(10).optional(),
-  json_data: z.record(z.unknown()),
+  json_data: z.record(z.string(), z.unknown()),
 });
 
 // GET /api/content — list published content

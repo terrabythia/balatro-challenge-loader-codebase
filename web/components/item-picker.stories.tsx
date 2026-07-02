@@ -52,7 +52,7 @@ export const WithTooltips: Story = {
 export const EmptySearch: Story = {
   play: async ({ canvas, userEvent }) => {
     const input = canvas.getByPlaceholderText("Search jokers...");
-    await userEvent.type(input, "zzz_nonexistent", { delay: 10 });
+    await userEvent.type(input, "zzz_nonexistent");
     await expect(
       canvas.getByText('No items match "zzz_nonexistent"')
     ).toBeVisible();
