@@ -708,6 +708,7 @@ export default function BuildView({
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUnpublishConfirm, setShowUnpublishConfirm] = useState(false);
+  const [showPublishedModal, setShowPublishedModal] = useState(false);
   const router = useRouter();
   const nameValid = state.name.trim().length >= 3;
 
@@ -785,7 +786,11 @@ export default function BuildView({
           : null;
         throw new Error(detail || data.error || "Failed to publish");
       }
+      const isFirstPublish = status !== "published";
       setStatus("published");
+      if (isFirstPublish) {
+        setShowPublishedModal(true);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Publish failed");
     } finally {
@@ -1404,6 +1409,32 @@ export default function BuildView({
                   className="px-4 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-sm font-medium transition-colors"
                 >
                   Unpublish
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body,
+        )}
+
+      {/* First-publish success modal */}
+      {showPublishedModal &&
+        createPortal(
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+            <div className="w-full max-w-sm rounded-xl border border-white/10 bg-neutral-900 p-6 shadow-2xl">
+              <h2 className="text-lg font-semibold">Challenge Published!</h2>
+              <p className="mt-3 text-sm leading-relaxed text-white/60">
+                Your challenge is now live! Other players can find it on the
+                Explore page. To play it in-game, install the Challenge
+                Loader mod and enter the code{" "}
+                <span className="font-mono text-white/80">{code}</span> on
+                the Challenges screen.
+              </p>
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => setShowPublishedModal(false)}
+                  className="px-6 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-medium transition-colors"
+                >
+                  OK
                 </button>
               </div>
             </div>
