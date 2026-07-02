@@ -86,6 +86,36 @@ return function()
   end
 
   -- ============================================================
+  -- Callback: paste from clipboard into the code input
+  -- ============================================================
+  function G.FUNCS.challenge_hub_paste(e)
+    -- Try to read the clipboard safely
+    local ok, clip = pcall(function()
+      if love and love.system and love.system.getClipboardText then
+        return love.system.getClipboardText()
+      end
+      return nil
+    end)
+
+    if not ok or not clip or clip == "" then
+      G.CHALLENGE_HUB_STATUS = "Clipboard empty"
+      G.CHALLENGE_HUB_STATUS_COLOUR = G.C.RED
+      return
+    end
+
+    -- Normalize pasted value like the existing Play handler
+    local code = tostring(clip):upper():gsub("%s+", "")
+    if #code == 10 and not code:find("-") then
+      code = code:sub(1,5) .. "-" .. code:sub(6,10)
+    end
+
+    G.CHALLENGE_HUB_CODE = code
+    G.CHALLENGE_HUB_STATUS = "Pasted code"
+    G.CHALLENGE_HUB_STATUS_COLOUR = G.C.WHITE
+    sendInfoMessage("Challenge Hub: Pasted code '" .. tostring(code) .. "'", "Challenge Hub")
+  end
+
+  -- ============================================================
   -- Callback: fetch challenge by code and start run immediately
   -- ============================================================
   function G.FUNCS.challenge_hub_add_play(e)
@@ -189,18 +219,25 @@ return function()
             },
           },
         },
-        -- Text input
+        -- Text input + Paste button
         {
           n = G.UIT.R,
           config = { align = "cm", padding = 0.2 },
           nodes = {
             create_text_input({
-              w = 5,
+              w = 4.2,
               max_length = 11,
               all_caps = true,
               prompt_text = "Code...",
               ref_table = G,
               ref_value = "CHALLENGE_HUB_CODE",
+            }),
+            UIBox_button({
+              label = { "Paste" },
+              button = "challenge_hub_paste",
+              colour = G.C.BLUE,
+              minw = 1.2,
+              scale = 0.35,
             }),
           },
         },
