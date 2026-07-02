@@ -1,13 +1,17 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import JokerPicker from "@/components/joker-picker";
 import ConsumablePicker from "@/components/consumable-picker";
 import VoucherPicker from "@/components/voucher-picker";
 import { type PickerItem } from "@/components/item-picker";
-import DeckEditor, { buildStandardDeck, type DeckCard } from "@/components/deck-editor";
+import DeckEditor, {
+  buildStandardDeck,
+  type DeckCard,
+  type CardInstance,
+} from "@/components/deck-editor";
 
 // ---- Types ----
 
@@ -23,7 +27,7 @@ interface BuilderData {
 interface ChallengeJson {
   key: string;
   name: string;
-  jokers: { id: string }[];
+  jokers: { id: string; edition?: string; eternal?: boolean }[];
   consumeables?: { id: string }[];
   vouchers?: { id: string }[];
   deck?: {
@@ -43,6 +47,13 @@ interface ChallengeJson {
   };
 }
 
+interface SelectedJoker {
+  uid: number;
+  item: PickerItem;
+  edition: string | null;
+  eternal: boolean;
+}
+
 interface BuilderState {
   name: string;
   description: string;
@@ -50,7 +61,7 @@ interface BuilderState {
   hands: number;
   discards: number;
   handSize: number;
-  jokers: PickerItem[];
+  jokers: SelectedJoker[];
   consumables: PickerItem[];
   vouchers: PickerItem[];
   deckCards: DeckCard[];
@@ -60,30 +71,50 @@ interface BuilderState {
   bannedVouchers: PickerItem[];
 }
 
+let jokerUid = 0;
+function nextJokerUid() {
+  return ++jokerUid;
+}
+
 // ---- Helpers ----
 
 function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_|_$/g, "")
-    .slice(0, 60) || "untitled";
+  return (
+    name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_|_$/g, "")
+      .slice(0, 60) || "untitled"
+  );
 }
 
 function buildChallengeJson(state: BuilderState): ChallengeJson {
-  const allStandard = state.deckCards.every((c) => c.included);
+  const allStandard = state.deckCards.every((c) => c.count === 1);
   const json: ChallengeJson = {
     key: slugify(state.name),
     name: state.name || "Untitled Challenge",
-    jokers: state.jokers.map((j) => ({ id: j.id })),
+    jokers: state.jokers.map((j) => {
+      const out: ChallengeJson["jokers"][number] = { id: j.item.id };
+      if (j.edition) out.edition = j.edition;
+      if (j.eternal) out.eternal = true;
+      return out;
+    }),
     deck: { type: "Challenge Deck" },
   };
-  if (state.dollars !== 4 || state.hands !== 4 || state.discards !== 3 || state.handSize !== 8) {
+  if (
+    state.dollars !== 4 ||
+    state.hands !== 4 ||
+    state.discards !== 3 ||
+    state.handSize !== 8
+  ) {
     const modifiers: { id: string; value: number }[] = [];
-    if (state.dollars !== 4) modifiers.push({ id: "dollars", value: state.dollars });
+    if (state.dollars !== 4)
+      modifiers.push({ id: "dollars", value: state.dollars });
     if (state.hands !== 4) modifiers.push({ id: "hands", value: state.hands });
-    if (state.discards !== 3) modifiers.push({ id: "discards", value: state.discards });
-    if (state.handSize !== 8) modifiers.push({ id: "hand_size", value: state.handSize });
+    if (state.discards !== 3)
+      modifiers.push({ id: "discards", value: state.discards });
+    if (state.handSize !== 8)
+      modifiers.push({ id: "hand_size", value: state.handSize });
     json.rules = { ...json.rules, modifiers };
   }
   if (state.consumables.length > 0) {
@@ -94,20 +125,51 @@ function buildChallengeJson(state: BuilderState): ChallengeJson {
   }
   if (!allStandard) {
     // --- Suit-level analysis ---
-    const suitShort: Record<string, string> = { Hearts: "H", Clubs: "C", Diamonds: "D", Spades: "S" };
+    const suitShort: Record<string, string> = {
+      Hearts: "H",
+      Clubs: "C",
+      Diamonds: "D",
+      Spades: "S",
+    };
     const rankShort: Record<string, string> = {
-      A: "A", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9", "10": "T", J: "J", Q: "Q", K: "K",
+      A: "A",
+      "2": "2",
+      "3": "3",
+      "4": "4",
+      "5": "5",
+      "6": "6",
+      "7": "7",
+      "8": "8",
+      "9": "9",
+      "10": "T",
+      J: "J",
+      Q: "Q",
+      K: "K",
     };
     const suitNames = ["Hearts", "Clubs", "Diamonds", "Spades"];
-    const rankNames = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+    const rankNames = [
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "J",
+      "Q",
+      "K",
+      "A",
+    ];
 
     const suitIncluded = new Set<string>();
     const suitExcluded = new Set<string>();
     let suitPartial = false;
     for (const s of suitNames) {
-      const cards = state.deckCards.filter((c) => c.suit === s);
-      if (cards.every((c) => c.included)) suitIncluded.add(s);
-      else if (cards.every((c) => !c.included)) suitExcluded.add(s);
+      const deckCards = state.deckCards.filter((c) => c.suit === s);
+      if (deckCards.every((c) => c.count > 0)) suitIncluded.add(s);
+      else if (deckCards.every((c) => c.count === 0)) suitExcluded.add(s);
       else suitPartial = true;
     }
 
@@ -115,22 +177,42 @@ function buildChallengeJson(state: BuilderState): ChallengeJson {
     const rankExcluded = new Set<string>();
     let rankPartial = false;
     for (const r of rankNames) {
-      const cards = state.deckCards.filter((c) => c.rank === r);
-      if (cards.every((c) => c.included)) rankIncluded.add(r);
-      else if (cards.every((c) => !c.included)) rankExcluded.add(r);
+      const deckCards = state.deckCards.filter((c) => c.rank === r);
+      if (deckCards.every((c) => c.count > 0)) rankIncluded.add(r);
+      else if (deckCards.every((c) => c.count === 0)) rankExcluded.add(r);
       else rankPartial = true;
     }
 
+    const hasDuplicates = state.deckCards.some((c) => c.count > 1);
+    const hasCustomCards = state.deckCards.some(
+      (c) => c.instances?.some((i) => i.enhancement || i.edition || i.seal)
+    );
+
     const deck: ChallengeJson["deck"] = { type: "Challenge Deck" };
 
-    if (suitPartial || rankPartial) {
-      // Mixed per-card state — use cards array
-      deck.cards = state.deckCards
-        .filter((c) => c.included)
-        .map((c) => ({ s: suitShort[c.suit], r: rankShort[c.rank] }));
+    if (suitPartial || rankPartial || hasDuplicates || hasCustomCards) {
+      // Mixed/duplicate/custom state — use cards array
+      deck.cards = [];
+      for (const c of state.deckCards) {
+        const insts = c.instances || [];
+        for (const inst of insts) {
+          const entry: { s: string; r: string; e?: string; d?: string; g?: string } = {
+            s: suitShort[c.suit],
+            r: rankShort[c.rank],
+          };
+          if (inst.enhancement) entry.e = inst.enhancement;
+          if (inst.edition) entry.d = inst.edition;
+          if (inst.seal) entry.g = inst.seal;
+          deck.cards.push(entry);
+        }
+      }
     } else {
       // Suit filters — prefer the shorter list (use abbreviations)
-      if (suitIncluded.size > 0 && suitIncluded.size < 4 && suitIncluded.size <= suitExcluded.size) {
+      if (
+        suitIncluded.size > 0 &&
+        suitIncluded.size < 4 &&
+        suitIncluded.size <= suitExcluded.size
+      ) {
         const yes: Record<string, true> = {};
         suitIncluded.forEach((s) => (yes[suitShort[s]] = true));
         deck.yes_suits = yes;
@@ -141,7 +223,11 @@ function buildChallengeJson(state: BuilderState): ChallengeJson {
       }
 
       // Rank filters — prefer the shorter list (use abbreviations)
-      if (rankIncluded.size > 0 && rankIncluded.size < 13 && rankIncluded.size <= rankExcluded.size) {
+      if (
+        rankIncluded.size > 0 &&
+        rankIncluded.size < 13 &&
+        rankIncluded.size <= rankExcluded.size
+      ) {
         const yes: Record<string, true> = {};
         rankIncluded.forEach((r) => (yes[rankShort[r]] = true));
         deck.yes_ranks = yes;
@@ -189,30 +275,105 @@ function applyDeckFilters(deck: {
   no_suits?: Record<string, true>;
   yes_ranks?: Record<string, true>;
   no_ranks?: Record<string, true>;
+  cards?: { s: string; r: string; e?: string; d?: string; g?: string }[];
 }): DeckCard[] {
-  const suitMap: Record<string, string> = { H: "Hearts", C: "Clubs", D: "Diamonds", S: "Spades" };
+  const suitMap: Record<string, string> = {
+    H: "Hearts",
+    C: "Clubs",
+    D: "Diamonds",
+    S: "Spades",
+  };
   const rankMap: Record<string, string> = {
-    A: "A", "2": "2", "3": "3", "4": "4", "5": "5", "6": "6", "7": "7", "8": "8", "9": "9", T: "10", J: "J", Q: "Q", K: "K",
+    A: "A",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6",
+    "7": "7",
+    "8": "8",
+    "9": "9",
+    T: "10",
+    J: "J",
+    Q: "Q",
+    K: "K",
   };
 
   const cards = buildStandardDeck();
+
+  // Handle explicit cards array
+  if (deck.cards && deck.cards.length > 0) {
+    // Group cards by suit+rank, collect instances
+    const grouped: Record<string, { count: number; instances: CardInstance[] }> = {};
+    for (const entry of deck.cards) {
+      const suit = suitMap[entry.s];
+      const rank = rankMap[entry.r];
+      if (!suit || !rank) continue;
+      const k = `${suit}-${rank}`;
+      if (!grouped[k]) grouped[k] = { count: 0, instances: [] };
+      grouped[k].count++;
+      grouped[k].instances.push({
+        enhancement: entry.e || null,
+        edition: entry.d || null,
+        seal: entry.g || null,
+      });
+    }
+    return cards.map((c) => {
+      const k = `${c.suit}-${c.rank}`;
+      const g = grouped[k];
+      if (g) {
+        return { ...c, count: g.count, instances: g.instances };
+      }
+      return { ...c, count: 0, instances: [] };
+    });
+  }
   if (!deck.yes_suits && !deck.no_suits && !deck.yes_ranks && !deck.no_ranks) {
     return cards; // no filters
   }
 
   return cards.map((c) => {
-    const suitShort = Object.entries(suitMap).find(([, v]) => v === c.suit)?.[0];
-    const rankShort = Object.entries(rankMap).find(([, v]) => v === c.rank)?.[0];
-    let included = true;
-    if (deck.yes_suits && suitShort && !deck.yes_suits[suitShort]) included = false;
-    if (deck.no_suits && suitShort && deck.no_suits[suitShort]) included = false;
-    if (deck.yes_ranks && rankShort && !deck.yes_ranks[rankShort]) included = false;
-    if (deck.no_ranks && rankShort && deck.no_ranks[rankShort]) included = false;
-    return { ...c, included };
+    const suitShort = Object.entries(suitMap).find(
+      ([, v]) => v === c.suit,
+    )?.[0];
+    const rankShort = Object.entries(rankMap).find(
+      ([, v]) => v === c.rank,
+    )?.[0];
+    let count = 1;
+    if (deck.yes_suits && suitShort && !deck.yes_suits[suitShort])
+      count = 0;
+    if (deck.no_suits && suitShort && deck.no_suits[suitShort])
+      count = 0;
+    if (deck.yes_ranks && rankShort && !deck.yes_ranks[rankShort])
+      count = 0;
+    if (deck.no_ranks && rankShort && deck.no_ranks[rankShort])
+      count = 0;
+    return { ...c, count };
   });
 }
 
 // ---- Steps ----
+
+const JOKER_SPRITE: SpriteConfig = {
+  url: "/sprites/Jokers.png",
+  width: 710,
+  height: 1520,
+  cellW: 71,
+  cellH: 95,
+};
+const CONSUMABLE_SPRITE: SpriteConfig = {
+  url: "/sprites/Tarots.png",
+  width: 710,
+  height: 570,
+  cellW: 71,
+  cellH: 95,
+};
+const VOUCHER_SPRITE: SpriteConfig = {
+  url: "/sprites/Vouchers.png",
+  width: 639,
+  height: 380,
+  cellW: 71,
+  cellH: 95,
+};
 
 const STEPS = [
   { label: "Starting State", sub: "Jokers, consumables & vouchers" },
@@ -220,30 +381,107 @@ const STEPS = [
   { label: "Deck", sub: "Customize your playing cards" },
 ] as const;
 
-// ---- Selected-item chips ----
+// ---- Selected joker chips with settings ----
 
-function SelectedChips({
-  items,
-  onRemove,
+const EDITIONS: { id: string; label: string; color: string }[] = [
+  { id: "e_foil", label: "Foil", color: "text-blue-300" },
+  { id: "e_holo", label: "Holo", color: "text-fuchsia-400" },
+  { id: "e_polychrome", label: "Poly", color: "text-amber-300" },
+  { id: "e_negative", label: "Neg", color: "text-pink-400" },
+];
+
+// ---- Selected-item cards (reusable) ----
+
+interface SpriteConfig {
+  url: string;
+  width: number;
+  height: number;
+  cellW: number;
+  cellH: number;
+}
+
+function SelectedItemCard({
+  item,
+  sprite,
+  variant = "default",
+  onDelete,
+  children,
 }: {
-  items: PickerItem[];
-  onRemove: (item: PickerItem) => void;
+  item: PickerItem;
+  sprite: SpriteConfig;
+  variant?: "default" | "banned";
+  onDelete: () => void;
+  children?: React.ReactNode;
 }) {
-  if (items.length === 0) return null;
+  const isBanned = variant === "banned";
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {items.map((item) => (
-        <button
-          key={item.id}
-          onClick={() => onRemove(item)}
-          className="flex items-center gap-1.5 bg-white/5 hover:bg-red-500/20 rounded-lg pl-1 pr-2 py-1 transition-colors group"
+    <div
+      className={`flex gap-3 p-3 rounded-lg border ${
+        isBanned
+          ? "bg-red-500/5 border-red-500/20"
+          : "bg-white/5 border-white/5"
+      }`}
+    >
+      {/* Sprite */}
+      <div className="flex flex-col items-center gap-1">
+        <div
+          className="rounded-sm"
+          style={{
+            width: sprite.cellW,
+            height: sprite.cellH,
+            backgroundImage: `url(${sprite.url})`,
+            backgroundSize: `${sprite.width}px ${sprite.height}px`,
+            backgroundPosition: `-${item.pos.x * sprite.cellW}px -${item.pos.y * sprite.cellH}px`,
+            imageRendering: "pixelated",
+          }}
+        />
+        <span
+          className={`text-xs text-center leading-tight max-w-[71px] truncate ${
+            isBanned ? "text-red-300/80" : "text-white/60"
+          }`}
         >
-          <span className="text-sm text-white/80 group-hover:text-red-300 truncate max-w-32">
-            {item.name}
-          </span>
-          <span className="text-white/30 group-hover:text-red-400 text-xs">✕</span>
-        </button>
-      ))}
+          {item.name}
+        </span>
+      </div>
+
+      {/* Settings */}
+      {children && (
+        <div className="flex flex-col gap-2 justify-center">{children}</div>
+      )}
+
+      {/* Delete */}
+      <button
+        onClick={onDelete}
+        className={`self-start text-xs p-1 ${
+          isBanned
+            ? "text-red-500/30 hover:text-red-400"
+            : "text-white/20 hover:text-red-400"
+        }`}
+        title="Remove"
+      >
+        ✕
+      </button>
+    </div>
+  );
+}
+
+function SelectedItemList({
+  children,
+  placeholderLabel = "None selected",
+}: {
+  children: React.ReactNode;
+  placeholderLabel?: string;
+}) {
+  const hasItems = React.Children.count(children) > 0;
+  return (
+    <div className="flex flex-wrap gap-4 min-h-[130px]">
+      {!hasItems && (
+        <span className="inline-flex items-center px-3 py-1.5 rounded-lg bg-white/[0.03] border border-dashed border-white/10 text-xs text-white/20">
+          {placeholderLabel}
+        </span>
+      )}
+      {children}
     </div>
   );
 }
@@ -342,7 +580,7 @@ function BossBlindPicker({
               </p>
             ))}
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );
@@ -395,15 +633,23 @@ export default function BuildView({
         const json = data.json_data as {
           key?: string;
           name?: string;
-          jokers?: { id: string }[];
+          jokers?: { id: string; edition?: string; eternal?: boolean }[];
           consumeables?: { id: string }[];
           vouchers?: { id: string }[];
           dollars?: number;
           hands?: number;
           discards?: number;
           hand_size?: number;
-          deck?: { yes_suits?: Record<string, true>; no_suits?: Record<string, true>; yes_ranks?: Record<string, true>; no_ranks?: Record<string, true> };
-          restrictions?: { banned_cards?: { id: string }[]; banned_other?: { id: string; type: string }[] };
+          deck?: {
+            yes_suits?: Record<string, true>;
+            no_suits?: Record<string, true>;
+            yes_ranks?: Record<string, true>;
+            no_ranks?: Record<string, true>;
+          };
+          restrictions?: {
+            banned_cards?: { id: string }[];
+            banned_other?: { id: string; type: string }[];
+          };
         };
 
         setState((s) => ({
@@ -415,8 +661,17 @@ export default function BuildView({
           discards: json.discards ?? 3,
           handSize: json.hand_size ?? 8,
           jokers: (json.jokers || [])
-            .map((j) => jokers.find((gj) => gj.id === j.id))
-            .filter(Boolean) as PickerItem[],
+            .map((j) => {
+              const item = jokers.find((gj) => gj.id === j.id);
+              if (!item) return null;
+              return {
+                uid: nextJokerUid(),
+                item,
+                edition: j.edition || null,
+                eternal: !!j.eternal,
+              };
+            })
+            .filter(Boolean) as SelectedJoker[],
           consumables: (json.consumeables || [])
             .map((c) => consumables.find((gc) => gc.id === c.id))
             .filter(Boolean) as PickerItem[],
@@ -444,7 +699,9 @@ export default function BuildView({
         if (!cancelled) setLoadingDraft(false);
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [editCode]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const preview = useMemo(() => buildChallengeJson(state), [state]);
@@ -519,7 +776,9 @@ export default function BuildView({
         <h1 className="text-lg font-bold">Challenge Builder</h1>
         <div className="flex items-center gap-3">
           {code && (
-            <span className="text-sm text-white/40 font-mono">Code: {code}</span>
+            <span className="text-sm text-white/40 font-mono">
+              Code: {code}
+            </span>
           )}
           {error && <span className="text-sm text-red-400">{error}</span>}
           <button
@@ -682,19 +941,99 @@ export default function BuildView({
                     </span>
                   )}
                 </h3>
-                <SelectedChips
-                  items={state.jokers}
-                  onRemove={(item) =>
-                    update({
-                      jokers: state.jokers.filter((j) => j.id !== item.id),
-                    })
-                  }
-                />
+                <SelectedItemList>
+                  {state.jokers.map((joker, idx) => (
+                    <SelectedItemCard
+                      key={joker.uid}
+                      item={joker.item}
+                      sprite={JOKER_SPRITE}
+                      onDelete={() => {
+                        const next = state.jokers.filter((_, i) => i !== idx);
+                        update({ jokers: next });
+                      }}
+                    >
+                      {/* Edition */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] text-white/30 uppercase tracking-wide">
+                          Edition
+                        </span>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => {
+                              const next = [...state.jokers];
+                              next[idx] = { ...joker, edition: null };
+                              update({ jokers: next });
+                            }}
+                            className={`px-1.5 py-0.5 rounded text-[10px] transition-colors ${
+                              !joker.edition
+                                ? "bg-white/10 text-white"
+                                : "bg-white/5 text-white/30 hover:text-white/60"
+                            }`}
+                          >
+                            None
+                          </button>
+                          {EDITIONS.map((ed) => (
+                            <button
+                              key={ed.id}
+                              onClick={() => {
+                                const next = [...state.jokers];
+                                next[idx] = { ...joker, edition: ed.id };
+                                update({ jokers: next });
+                              }}
+                              className={`px-1.5 py-0.5 rounded text-[10px] transition-colors ${
+                                joker.edition === ed.id
+                                  ? `bg-white/10 ${ed.color}`
+                                  : "bg-white/5 text-white/30 hover:text-white/60"
+                              }`}
+                            >
+                              {ed.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Eternal toggle */}
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <span className="text-[10px] text-white/30 uppercase tracking-wide">
+                          Eternal
+                        </span>
+                        <button
+                          onClick={() => {
+                            const next = [...state.jokers];
+                            next[idx] = { ...joker, eternal: !joker.eternal };
+                            update({ jokers: next });
+                          }}
+                          className={`w-8 h-4 rounded-full transition-colors relative ${
+                            joker.eternal ? "bg-emerald-500" : "bg-white/10"
+                          }`}
+                        >
+                          <div
+                            className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${
+                              joker.eternal
+                                ? "translate-x-4"
+                                : "translate-x-0.5"
+                            }`}
+                          />
+                        </button>
+                      </label>
+                    </SelectedItemCard>
+                  ))}
+                </SelectedItemList>
                 <JokerPicker
                   items={jokers}
                   descriptions={descriptions}
                   onSelect={(item) =>
-                    update({ jokers: [...state.jokers, item] })
+                    update({
+                      jokers: [
+                        ...state.jokers,
+                        {
+                          uid: nextJokerUid(),
+                          item,
+                          edition: null,
+                          eternal: false,
+                        },
+                      ],
+                    })
                   }
                   placeholder="Add a joker…"
                 />
@@ -709,16 +1048,21 @@ export default function BuildView({
                     </span>
                   )}
                 </h3>
-                <SelectedChips
-                  items={state.consumables}
-                  onRemove={(item) =>
-                    update({
-                      consumables: state.consumables.filter(
-                        (c) => c.id !== item.id
-                      ),
-                    })
-                  }
-                />
+                <SelectedItemList>
+                  {state.consumables.map((item, idx) => (
+                    <SelectedItemCard
+                      key={`${item.id}-${idx}`}
+                      item={item}
+                      sprite={CONSUMABLE_SPRITE}
+                      onDelete={() => {
+                        const next = state.consumables.filter(
+                          (_, i) => i !== idx,
+                        );
+                        update({ consumables: next });
+                      }}
+                    />
+                  ))}
+                </SelectedItemList>
                 <ConsumablePicker
                   items={consumables}
                   onSelect={(item) =>
@@ -739,16 +1083,19 @@ export default function BuildView({
                     </span>
                   )}
                 </h3>
-                <SelectedChips
-                  items={state.vouchers}
-                  onRemove={(item) =>
-                    update({
-                      vouchers: state.vouchers.filter(
-                        (v) => v.id !== item.id
-                      ),
-                    })
-                  }
-                />
+                <SelectedItemList>
+                  {state.vouchers.map((item, idx) => (
+                    <SelectedItemCard
+                      key={`${item.id}-${idx}`}
+                      item={item}
+                      sprite={VOUCHER_SPRITE}
+                      onDelete={() => {
+                        const next = state.vouchers.filter((_, i) => i !== idx);
+                        update({ vouchers: next });
+                      }}
+                    />
+                  ))}
+                </SelectedItemList>
                 <VoucherPicker
                   items={vouchers}
                   onSelect={(item) =>
@@ -796,16 +1143,22 @@ export default function BuildView({
                     </span>
                   )}
                 </h3>
-                <SelectedChips
-                  items={state.bannedJokers}
-                  onRemove={(item) =>
-                    update({
-                      bannedJokers: state.bannedJokers.filter(
-                        (j) => j.id !== item.id
-                      ),
-                    })
-                  }
-                />
+                <SelectedItemList>
+                  {state.bannedJokers.map((item, idx) => (
+                    <SelectedItemCard
+                      key={`${item.id}-${idx}`}
+                      item={item}
+                      sprite={JOKER_SPRITE}
+                      variant="banned"
+                      onDelete={() => {
+                        const next = state.bannedJokers.filter(
+                          (_, i) => i !== idx,
+                        );
+                        update({ bannedJokers: next });
+                      }}
+                    />
+                  ))}
+                </SelectedItemList>
                 <JokerPicker
                   items={jokers}
                   descriptions={descriptions}
@@ -827,23 +1180,29 @@ export default function BuildView({
                     </span>
                   )}
                 </h3>
-                <SelectedChips
-                  items={state.bannedConsumables}
-                  onRemove={(item) =>
-                    update({
-                      bannedConsumables: state.bannedConsumables.filter(
-                        (c) => c.id !== item.id
-                      ),
-                    })
-                  }
-                />
+                <SelectedItemList>
+                  {state.bannedConsumables.map((item, idx) => (
+                    <SelectedItemCard
+                      key={`${item.id}-${idx}`}
+                      item={item}
+                      sprite={CONSUMABLE_SPRITE}
+                      variant="banned"
+                      onDelete={() => {
+                        const next = state.bannedConsumables.filter(
+                          (_, i) => i !== idx,
+                        );
+                        update({ bannedConsumables: next });
+                      }}
+                    />
+                  ))}
+                </SelectedItemList>
                 <ConsumablePicker
                   items={consumables}
                   onSelect={(item) =>
                     update({
                       bannedConsumables: toggleItem(
                         state.bannedConsumables,
-                        item
+                        item,
                       ),
                     })
                   }
@@ -860,16 +1219,22 @@ export default function BuildView({
                     </span>
                   )}
                 </h3>
-                <SelectedChips
-                  items={state.bannedVouchers}
-                  onRemove={(item) =>
-                    update({
-                      bannedVouchers: state.bannedVouchers.filter(
-                        (v) => v.id !== item.id
-                      ),
-                    })
-                  }
-                />
+                <SelectedItemList>
+                  {state.bannedVouchers.map((item, idx) => (
+                    <SelectedItemCard
+                      key={`${item.id}-${idx}`}
+                      item={item}
+                      sprite={VOUCHER_SPRITE}
+                      variant="banned"
+                      onDelete={() => {
+                        const next = state.bannedVouchers.filter(
+                          (_, i) => i !== idx,
+                        );
+                        update({ bannedVouchers: next });
+                      }}
+                    />
+                  ))}
+                </SelectedItemList>
                 <VoucherPicker
                   items={vouchers}
                   onSelect={(item) =>
