@@ -1,6 +1,6 @@
 # Progress Board — Challenge Hub
 
-Last updated: 2026-07-01
+Last updated: 2026-07-02
 
 ## Legend
 
@@ -59,7 +59,7 @@ Last updated: 2026-07-01
 | # | Task | Status | Notes |
 |---|---|---|---|
 | 4.1 | `/build` page — challenge builder form | 🟢 | Full layout: name/desc, jokers, consumables, vouchers, deck, blind bans, JSON preview sidebar, Save Draft + Publish buttons |
-| 4.2 | Joker picker (combobox with vanilla joker list) | 🟢 | `JokerPicker` wrapper — sprite grid + tooltips with description text |
+| 4.2 | Joker picker (combobox with vanilla joker list) | 🟢 | `JokerPicker` wrapper + edition picker (Foil/Holo/Poly/Neg) + eternal toggle per joker |
 | 4.3 | Consumable picker | 🟢 | `ConsumablePicker` wrapper — Tarot/Planet/Spectral, set-coloured tooltips |
 | 4.4 | Voucher picker | 🟢 | `VoucherPicker` wrapper |
 | 4.5 | Restrictions picker (blinds, cards, tags) | 🟢 | BossBlindPicker — toggle chips for 28 boss blinds |
@@ -140,16 +140,17 @@ Last updated: 2026-07-01
 - **VPS**: Docker + Postgres running. Local: `docker compose -f docker-compose-local.yml` on port 5455.
 - **API**: All 7 endpoints implemented + 27/27 tests passing (`bun test`). Auth is hand-rolled JWT via `jose` — no NextAuth. GET /api/content/:code now returns drafts to their owner. Key auto-prefixed with Discord user ID on save.
 - **Web**: Next.js + Bun + Tailwind. Pages: `login` (Discord OAuth → JWT session), `test-picker` (joker browser demo), `/build` (3-step challenge wizard).
-- **Builder**: Name + description (always visible), 3-step wizard (Starting State, Restrictions, Deck). Starting jokers/consumables support duplicates. Banned jokers/consumables/vouchers/blinds. Deck editor with sprite-based suit/rank toggles. Live JSON preview sidebar. Save Draft (POST→PUT on re-save), Publish, URL updates to ?code= on first save. Name validation (min 3 chars).
+- **Builder**: Name + description (always visible), 3-step wizard (Starting State, Restrictions, Deck). Starting jokers have per-instance edition picker + eternal toggle. Starting jokers/consumables support duplicates. Banned jokers/consumables/vouchers/blinds. Deck editor with sprite-based 4×13 grid, +/- count buttons per card, hover-to-edit, floating detail panel with per-copy enhancement/edition/seal selectors. Live JSON preview sidebar. Save Draft (POST→PUT on re-save), Publish, URL updates to ?code= on first save. Name validation (min 3 chars).
 - **Data**: Extraction script at `scripts/extract-game-data.ts` pulls 150 jokers, 52 consumables, 32 vouchers, 30 blinds + sprite atlases from Balatro.love into `web/public/data/` and `web/public/sprites/`.
-- **Components**: `ItemPicker` (reusable sprite-grid picker with portal tooltips, search, `renderTooltip`/`getTitle` props), `JokerPicker`, `ConsumablePicker`, `VoucherPicker` (dedicated wrapper components), `DeckEditor` (sprite-based 4×13 card grid with yes_suits/no_suits/yes_ranks/no_ranks/cards output). `DescriptionText` (parses Balatro `{C:red}` tags and `#N#` placeholders from config into styled React elements).
-- **Mod**: `challenge-loader` Lua mod (Steamodded) — loads JSON challenges from `challenges/` directory. Supports jokers, consumables, vouchers, deck (yes_suits/no_suits/yes_ranks/no_ranks/cards), restrictions (banned_cards, banned_other), and rules.modifiers (dollars, hands, discards, hand_size).
-- **Storybook**: Storybook 10 + `@storybook/nextjs-vite` with Vitest + Playwright (Chromium). 5 stories, 10 tests passing. Run with `bun run storybook` or `npx vitest --project storybook run`.
+- **Components**: `ItemPicker` (reusable sprite-grid picker with portal tooltips, search, `renderTooltip`/`getTitle` props), `JokerPicker`, `ConsumablePicker`, `VoucherPicker` (dedicated wrapper components), `DeckEditor` (sprite-based 4×13 card grid with count controls, floating detail panel for per-copy enhancement/edition/seal). `SelectedItemCard`/`SelectedItemList` (unified card layout with optional settings, used across all 7 picker sections). `DescriptionText` (parses Balatro `{C:red}` tags and `#N#` placeholders from config into styled React elements).
+- **Mod**: `challenge-loader` Lua mod (Steamodded) — loads JSON challenges from `challenges/` directory. Supports jokers (with edition/eternal), consumables, vouchers, deck (yes_suits/no_suits/yes_ranks/no_ranks/cards with enhancement/edition/seal attributes), restrictions (banned_cards, banned_other), and rules.modifiers (dollars, hands, discards, hand_size).
+- **Storybook**: Storybook 10 + `@storybook/nextjs-vite` with Vitest + Playwright (Chromium). 5 stories, 11 tests passing. Run with `bun run storybook` or `npx vitest --project storybook run`.
 
 ### Key files for next session
 
 | File | What |
 |---|---|
+| `components/deck-editor.tsx` | DeckEditor component — sprite grid, count controls, floating detail panel, `CardInstance` type |
 | `components/item-picker.tsx` | Reusable sprite picker — use for jokers, consumables, vouchers, blinds |
 | `lib/description-parser.tsx` | `DescriptionText` component — renders Balatro descriptions with color tags + variable resolution |
 | `scripts/extract-game-data.ts` | `bun run scripts/extract-game-data.ts` to refresh game data |
@@ -182,6 +183,8 @@ Last updated: 2026-07-01
 - Data refresh: `bun run scripts/extract-game-data.ts` (from project root)
 - Discord OAuth: needs `.env` with `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_REDIRECT_URI`, `JWT_SECRET`
 - `pg` needs `serverExternalPackages: ["pg"]` in `next.config.ts` for Turbopack
-- **Deck editor**: Sprite atlas uses 8BitDeck.png at 1x (923×380, 71×95 cells). Suits: Hearts=row0, Clubs=row1, Diamonds=row2, Spades=row3. Ranks: A=col0...K=col12.
-- JSON deck format: `yes_suits`/`no_suits` use single letters (H/C/D/S), `yes_ranks`/`no_ranks` use single chars (A/2-9/T/J/Q/K), `cards` use `{s: "H", r: "A"}`.
+- **Deck editor**: Sprite atlas uses 8BitDeck.png at 1x (923×380, 71×95 cells). Suits: Hearts=row0, Clubs=row1, Diamonds=row2, Spades=row3. **Ranks: 2=col0, 3=col1, …, K=col11, A=col12** (Ace is last, not first!)
+- JSON deck format: `yes_suits`/`no_suits` use single letters (H/C/D/S), `yes_ranks`/`no_ranks` use single chars (2-9/T/J/Q/K/A), `cards` use `{s: "H", r: "A"}`.
+- Card enhancements output `e` field (m_bonus, m_steel, etc.), editions output `d` field (e_foil, e_holo, etc.), seals output `g` field (red, blue, gold, purple).
 - Challenge JSON stat modifiers go in `rules.modifiers` array: `[{ id: "dollars", value: 20 }]`, NOT at the top level.
+- `allStandard` check must include instance attributes: `c.instances.every(i => !i.enhancement && !i.edition && !i.seal)` or custom cards won't appear in JSON output.

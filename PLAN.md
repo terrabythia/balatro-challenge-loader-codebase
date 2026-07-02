@@ -980,13 +980,13 @@ The mod connects to the VPS on port 3001 (plain HTTP, no TLS). Nginx proxies thi
 
 ## Future Enhancements
 
-- [ ] **Joker editions** — starting jokers should be able to have editions (Foil, Holographic, Polychrome, Negative)
-- [ ] **Eternal jokers** — starting jokers should be able to be eternal (cannot be sold/destroyed)
+- [x] **Joker editions** — starting jokers should be able to have editions (Foil, Holographic, Polychrome, Negative)
+- [x] **Eternal jokers** — starting jokers should be able to be eternal (cannot be sold/destroyed)
 - [ ] **Perishable/rental jokers** — support other joker stickers
-- [ ] **Card enhancements** — deck cards should support enhancements (Bonus, Mult, Wild, Glass, Steel, Stone, Gold, Lucky)
-- [ ] **Card editions** — deck cards should support editions (Foil, Holographic, Polychrome)
-- [ ] **Card seals** — deck cards should support seals (Red, Blue, Gold, Purple)
-- [ ] **Duplicate cards in deck** — support adding multiple copies of the same card (e.g., 5x Ace of Hearts)
+- [x] **Card enhancements** — deck cards should support enhancements (Bonus, Mult, Wild, Glass, Steel, Stone, Gold, Lucky)
+- [x] **Card editions** — deck cards should support editions (Foil, Holographic, Polychrome)
+- [x] **Card seals** — deck cards should support seals (Red, Blue, Gold, Purple)
+- [x] **Duplicate cards in deck** — support adding multiple copies of the same card (e.g., 5x Ace of Hearts)
 - [ ] **Banned tags** — allow banning skip tags (e.g., no Investment tags)
 - [ ] **Rules editor** — expose custom rules/modifiers as structured inputs (e.g., no rerolls, interest cap, etc.)
 - [ ] **Variable resolution in descriptions** — resolve #N# placeholders when displaying challenge JSON (currently shows raw placeholders like `#1# in #2# chance`)
