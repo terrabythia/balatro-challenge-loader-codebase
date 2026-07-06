@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import CodeDisplay from "@/components/code-display";
 
 export default async function MyChallengesPage() {
   const session = await getSession();
@@ -11,7 +12,7 @@ export default async function MyChallengesPage() {
 
   const ownershipColumn = session.isGuest ? "c.guest_id" : "c.author_id";
   const result = await db.query(
-    `SELECT c.code, c.name, c.status, c.downloads, c.created_at, c.updated_at,
+    `SELECT c.code, c.name, c.status, c.downloads, c.plays, c.created_at, c.updated_at,
             COALESCE(AVG(r.score)::float, 0) as avg_rating,
             COUNT(r.id)::int as rating_count
      FROM content c
@@ -27,6 +28,7 @@ export default async function MyChallengesPage() {
     name: string;
     status: string;
     downloads: number;
+    plays: number;
     created_at: string;
     updated_at: string;
     avg_rating: number;
@@ -82,6 +84,9 @@ export default async function MyChallengesPage() {
                   Downloads
                 </th>
                 <th className="px-4 py-3 text-left font-medium text-white/40">
+                  Plays
+                </th>
+                <th className="px-4 py-3 text-left font-medium text-white/40">
                   Updated
                 </th>
                 <th className="px-4 py-3 text-right font-medium text-white/40">
@@ -97,8 +102,8 @@ export default async function MyChallengesPage() {
                 >
                   <td className="px-4 py-3">
                     <div className="font-medium">{c.name}</div>
-                    <div className="mt-0.5 font-mono text-xs text-white/20">
-                      {c.code}
+                    <div className="mt-0.5">
+                      <CodeDisplay code={c.code} size="xs" />
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -128,6 +133,13 @@ export default async function MyChallengesPage() {
                   <td className="px-4 py-3">
                     {c.status === "published" ? (
                       c.downloads
+                    ) : (
+                      <span className="text-white/20">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {c.status === "published" ? (
+                      c.plays
                     ) : (
                       <span className="text-white/20">—</span>
                     )}
