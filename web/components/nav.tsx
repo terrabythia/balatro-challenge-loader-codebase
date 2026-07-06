@@ -1,7 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { headers } from "next/headers";
-import { getSession } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { usePathname } from "next/navigation";
 import GuestActions from "@/components/guest-actions";
 
 const NAV_LINKS = [
@@ -18,17 +18,14 @@ function navLinkClasses(active: boolean): string {
   }`;
 }
 
-export default async function Nav() {
-  const session = await getSession();
-  const pathname = (await headers()).get("x-pathname") ?? "/";
-  let username: string | null = null;
+export interface NavProps {
+  hasSession: boolean;
+  isGuest: boolean;
+  username: string | null;
+}
 
-  if (session && !session.isGuest) {
-    const result = await db.query("SELECT username FROM users WHERE id = $1", [
-      session.userId,
-    ]);
-    username = result.rows[0]?.username ?? null;
-  }
+export default function Nav({ hasSession, isGuest, username }: NavProps) {
+  const pathname = usePathname();
 
   return (
     <nav className="sticky top-0 z-50 border-b border-white/5 bg-neutral-950/90 backdrop-blur">
@@ -50,12 +47,12 @@ export default async function Nav() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {session ? (
+          {hasSession ? (
             <>
               <span className="text-sm text-white/40">
-                {session.isGuest ? "Guest" : username}
+                {isGuest ? "Guest" : username}
               </span>
-              {session.isGuest ? (
+              {isGuest ? (
                 <>
                   <a
                     href="/api/auth/login"
