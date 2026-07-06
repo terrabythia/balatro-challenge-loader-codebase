@@ -1,9 +1,9 @@
 import { db } from "@/lib/db";
 import ExploreClient from "@/components/explore-client";
 
-// Server-cached with ISR — real-time subscriptions in the client
-// component keep active visitors fresh after the initial SSR load.
-export const revalidate = 60;
+// Always render fresh — the three indexed aggregate queries hit Supabase,
+// not a local DB. Even at high traffic the server is just a thin proxy.
+export const revalidate = 0;
 
 interface ChallengeRow {
   code: string;
