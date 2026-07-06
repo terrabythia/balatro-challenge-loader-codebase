@@ -1,18 +1,15 @@
-# fly.toml app configuration file generated for balatro-challenge-hub on 2026-07-06T11:00:31+02:00
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
 app = 'balatro-challenge-hub'
 primary_region = 'ams'
 
 [build]
   dockerfile = 'Dockerfile'
 
+  [build.args]
+    NEXT_PUBLIC_SUPABASE_URL = 'https://fmqytwjoqxklkshfyejj.supabase.co'
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_u20gF1vz-eQU5UAgEnqmtw_t5KdHQnx'
+
 [env]
   PORT = '3000'
-  NEXT_PUBLIC_SUPABASE_URL = 'https://fmqytwjoqxklkshfyejj.supabase.co'
-  NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_u20gF1vz-eQU5UAgEnqmtw_t5KdHQnx'
 
 [http_service]
   internal_port = 3000
