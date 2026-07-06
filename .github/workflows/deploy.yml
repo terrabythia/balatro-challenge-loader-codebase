@@ -25,8 +25,8 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
         run: |
-          supabase link --project-ref "$SUPABASE_PROJECT_ID"
-          supabase db push --password "$SUPABASE_DB_PASSWORD"
+          DB_URL="postgresql://postgres.$SUPABASE_PROJECT_ID:$SUPABASE_DB_PASSWORD@db.$SUPABASE_PROJECT_ID.supabase.co:5432/postgres"
+          supabase db push --db-url "$DB_URL"
 
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
