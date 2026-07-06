@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
   const result = await db.query(
     `SELECT c.code, c.type, c.name, u.username as author,
             c.description, c.tags, c.downloads, c.created_at,
+            c.plays, c.wins, c.losses,
             COALESCE(AVG(r.score), 0) as avg_rating,
             COUNT(r.id)::int as rating_count
      FROM content c

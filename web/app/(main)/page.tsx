@@ -11,6 +11,9 @@ interface ChallengeRow {
   author: string;
   description: string | null;
   downloads: number;
+  plays: number;
+  wins: number;
+  losses: number;
   avg_rating: number;
   rating_count: number;
 }
@@ -28,7 +31,7 @@ async function fetchChallenges(
 
   const result = await db.query(
     `SELECT c.code, c.name, u.username as author, c.description,
-            c.downloads,
+            c.downloads, c.plays, c.wins, c.losses,
             COALESCE(AVG(r.score)::float, 0) as avg_rating,
             COUNT(r.id)::int as rating_count
      FROM content c

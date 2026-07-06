@@ -10,6 +10,9 @@ interface ChallengeRow {
   author: string;
   description: string | null;
   downloads: number;
+  plays: number;
+  wins: number;
+  losses: number;
   avg_rating: number;
   rating_count: number;
 }
@@ -29,7 +32,9 @@ function ChallengeCard({ c }: { c: ChallengeRow }) {
         </div>
         <div className="flex shrink-0 items-center gap-3 text-xs text-white/30">
           {c.rating_count > 0 && (
-            <span title={`${c.avg_rating.toFixed(1)} stars (${c.rating_count})`}>
+            <span
+              title={`${c.avg_rating.toFixed(1)} stars (${c.rating_count})`}
+            >
               ★ {c.avg_rating.toFixed(1)}
             </span>
           )}
@@ -134,10 +139,7 @@ export default function ExploreClient({
   );
 }
 
-async function fetchList(
-  sort: SortKey,
-  limit = 6,
-): Promise<ChallengeRow[]> {
+async function fetchList(sort: SortKey, limit = 6): Promise<ChallengeRow[]> {
   const res = await fetch(
     `/api/content?type=challenge&sort=${sort}&limit=${limit}`,
   );

@@ -149,6 +149,55 @@ return function()
     return false, err or "unexpected response"
   end
 
+  --- Send the result of a played challenge.
+  --- Sends a POST with JSON body { won: boolean }.
+  function HubAPI.send_result(code, won)
+    local body = '{"won":' .. tostring(won) .. '}'
+    local path = "/api/content/" .. code .. "/result"
+
+    -- POST with body (uses raw TCP since socket.http may not handle POST bodies)
+    local client, err = socket.tcp()
+    if not client then
+      return false, "socket.tcp() failed: " .. (err or "unknown")
+    end
+
+    client:settimeout(5)
+    client:setoption("tcp-nodelay", true)
+
+    local port = API_USE_HTTPS and 443 or 80
+    local ok, connect_err = client:connect(API_HOST, port)
+    if not ok then
+      client:close()
+      return false, "Connection failed: " .. (connect_err or "unknown")
+    end
+
+    local host_header = API_HOST
+    local req = "POST " .. path .. " HTTP/1.0\r\n"
+      .. "Host: " .. host_header .. "\r\n"
+      .. "Content-Type: application/json\r\n"
+      .. "Content-Length: " .. #body .. "\r\n"
+      .. "Connection: close\r\n"
+      .. "\r\n"
+      .. body
+
+    client:send(req)
+
+    -- Read status line
+    local status_line = client:receive("*l")
+    if not status_line then
+      client:close()
+      return false, "No response"
+    end
+
+    local status_code = status_line:match("HTTP/%d%.%d (%d+)")
+    client:close()
+
+    if status_code == "200" or status_code == "201" then
+      return true
+    end
+    return false, "Server returned " .. (status_code or "?")
+  end
+
   -- Expose globally for use by other modules
   _G.HubAPI = HubAPI
 end
