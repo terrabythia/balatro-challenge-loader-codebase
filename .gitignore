@@ -4,3 +4,4 @@ node_modules
 .env.local
 .DS_Store
 mod/config.json
+mod/hub_challenges/*

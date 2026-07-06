@@ -1,18 +1,31 @@
+"use client";
+
 import Link from "next/link";
-import { getSession } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { usePathname } from "next/navigation";
 import GuestActions from "@/components/guest-actions";
 
-export default async function Nav() {
-  const session = await getSession();
-  let username: string | null = null;
+const NAV_LINKS = [
+  { href: "/", label: "Explore", match: (p: string) => p === "/" },
+  { href: "/my-challenges", label: "My Challenges", match: (p: string) => p.startsWith("/my-challenges") },
+  { href: "/install", label: "Install Mod", match: (p: string) => p.startsWith("/install") },
+] as const;
 
-  if (session && !session.isGuest) {
-    const result = await db.query("SELECT username FROM users WHERE id = $1", [
-      session.userId,
-    ]);
-    username = result.rows[0]?.username ?? null;
-  }
+function navLinkClasses(active: boolean): string {
+  return `px-3 py-1.5 rounded-lg text-sm transition-colors ${
+    active
+      ? "text-white bg-white/10"
+      : "text-white/60 hover:text-white hover:bg-white/5"
+  }`;
+}
+
+export interface NavProps {
+  hasSession: boolean;
+  isGuest: boolean;
+  username: string | null;
+}
+
+export default function Nav({ hasSession, isGuest, username }: NavProps) {
+  const pathname = usePathname();
 
   return (
     <nav className="sticky top-0 z-50 border-b border-white/5 bg-neutral-950/90 backdrop-blur">
@@ -22,33 +35,24 @@ export default async function Nav() {
             Challenge Hub
           </Link>
           <div className="flex items-center gap-1">
-            <Link
-              href="/"
-              className="px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              Explore
-            </Link>
-            <Link
-              href="/my-challenges"
-              className="px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              My Challenges
-            </Link>
-            <Link
-              href="/install"
-              className="px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              Install Mod
-            </Link>
+            {NAV_LINKS.map(({ href, label, match }) => (
+              <Link
+                key={href}
+                href={href}
+                className={navLinkClasses(match(pathname))}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {session ? (
+          {hasSession ? (
             <>
               <span className="text-sm text-white/40">
-                {session.isGuest ? "Guest" : username}
+                {isGuest ? "Guest" : username}
               </span>
-              {session.isGuest ? (
+              {isGuest ? (
                 <>
                   <a
                     href="/api/auth/login"

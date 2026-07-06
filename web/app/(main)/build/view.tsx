@@ -7,6 +7,8 @@ import JokerPicker from "@/components/joker-picker";
 import ConsumablePicker from "@/components/consumable-picker";
 import VoucherPicker from "@/components/voucher-picker";
 import { type PickerItem } from "@/components/item-picker";
+import CodeDisplay from "@/components/code-display";
+import SpriteIcon from "@/components/sprite-icon";
 import DeckEditor, {
   buildStandardDeck,
   type DeckCard,
@@ -367,7 +369,7 @@ function applyDeckFilters(deck: {
   });
 }
 
-// ---- Steps ----
+// ---- Sprites ----
 
 const JOKER_SPRITE: SpriteConfig = {
   url: "/sprites/Jokers.png",
@@ -390,6 +392,15 @@ const VOUCHER_SPRITE: SpriteConfig = {
   cellW: 71,
   cellH: 95,
 };
+const BLIND_SPRITE = {
+  src: "/sprites/BlindChips.png",
+  sheetWidth: 1428,
+  sheetHeight: 2108,
+  cellWidth: 1428,
+  cellHeight: 68,
+} as const;
+
+// ---- Steps ----
 
 const STEPS = [
   { label: "Starting State", sub: "Jokers, consumables & vouchers" },
@@ -570,12 +581,24 @@ function BossBlindPicker({
               });
             }}
             onMouseLeave={() => setTooltip(null)}
-            className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors ${
               isSelected
                 ? "bg-red-500/20 text-red-300 border border-red-500/30"
                 : "bg-white/5 text-white/50 hover:bg-white/10 border border-white/5"
             }`}
           >
+            {blind.pos && (
+              <SpriteIcon
+                src={BLIND_SPRITE.src}
+                pos={blind.pos}
+                sheetWidth={BLIND_SPRITE.sheetWidth}
+                sheetHeight={BLIND_SPRITE.sheetHeight}
+                cellWidth={BLIND_SPRITE.cellWidth}
+                cellHeight={BLIND_SPRITE.cellHeight}
+                displayHeight={20}
+                displayWidth={20}
+              />
+            )}
             {blind.name}
           </button>
         );
@@ -843,9 +866,7 @@ export default function BuildView({
         </div>
         <div className="flex items-center gap-3">
           {code && (
-            <span className="text-sm text-white/40 font-mono">
-              Code: {code}
-            </span>
+            <CodeDisplay code={code!} size="sm" label="Code:" />
           )}
           {error && <span className="text-sm text-red-400">{error}</span>}
           {status !== "published" && (
@@ -1443,7 +1464,7 @@ export default function BuildView({
                 Your challenge is now live! Other players can find it on the
                 Explore page. To play it in-game, install the Challenge
                 Loader mod and enter the code{" "}
-                <span className="font-mono text-white/80">{code}</span> on
+                <CodeDisplay code={code!} size="sm" variant="bright" /> on
                 the Challenges screen.
               </p>
               <div className="mt-6 flex justify-end">
