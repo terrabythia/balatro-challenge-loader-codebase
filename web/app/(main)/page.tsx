@@ -2,7 +2,9 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import RealtimeRefresh from "@/components/realtime-refresh";
 
-export const revalidate = 0; // always fresh
+// Cached for 60s on the server — real-time subscriptions keep active
+// visitors fresh, this is the fallback for new visitors and cold loads.
+export const revalidate = 60;
 
 interface ChallengeRow {
   code: string;
