@@ -11,25 +11,34 @@ return function()
   -- ============================================================
   -- CONFIGURATION
   -- ============================================================
-  -- Change these to match your server:
-  local API_HOST = "127.0.0.1"   -- replace with your VPS IP
-  local API_PORT = 3000
+  local API_HOST = "balatro-challenge-hub.fly.dev"
+  local API_USE_HTTPS = true
   local API_SECRET = "332ff12df44075eea1ba1b2d2b06cf18a0d9ef4a0f30de14654f56bc6afd6a0a"
   -- ============================================================
 
   local HubAPI = {}
 
   --- Try socket.http first (handles chunked encoding, redirects, etc.)
-  --- Falls back to raw TCP if not available.
+  --- Falls back to ssl.https for HTTPS, then raw TCP.
   local http = nil
-  local http_ok = pcall(function() http = require("socket.http") end)
+  if API_USE_HTTPS then
+    pcall(function() http = require("ssl.https") end)
+    if not http then
+      sendWarnMessage("Challenge Hub: luasec not available — HTTPS requests may fail. Install luasec for HTTPS support.", "Challenge Hub")
+      pcall(function() http = require("socket.http") end)
+    end
+  else
+    pcall(function() http = require("socket.http") end)
+  end
+
+  local scheme = API_USE_HTTPS and http and "https" or "http"
 
   --- Perform an HTTP request.
   --- Returns (data, nil) on success, or (nil, error_message) on failure.
   function HubAPI.request(method, path)
     if http then
       -- Use the high-level HTTP library (handles chunked encoding, etc.)
-      local url = "http://" .. API_HOST .. ":" .. API_PORT .. path
+      local url = scheme .. "://" .. API_HOST .. path
       local body, status_code = http.request(url)
       if status_code == 200 and body then
         local ok, data = pcall(JSON.decode, body)
@@ -41,7 +50,11 @@ return function()
       return nil, "Server returned HTTP " .. tostring(status_code)
     end
 
-    -- Fallback: raw TCP
+    -- Fallback: raw TCP (HTTP only — no TLS support for raw sockets)
+    if API_USE_HTTPS then
+      return nil, "Cannot connect via HTTPS without luasec. Install luasec for HTTPS support."
+    end
+
     local client, err = socket.tcp()
     if not client then
       return nil, "socket.tcp() failed: " .. (err or "unknown")
@@ -50,16 +63,13 @@ return function()
     client:settimeout(5)
     client:setoption("tcp-nodelay", true)
 
-    local ok, connect_err = client:connect(API_HOST, API_PORT)
+    local ok, connect_err = client:connect(API_HOST, 80)
     if not ok then
       client:close()
       return nil, "Connection failed: " .. (connect_err or "unknown")
     end
 
     local host_header = API_HOST
-    if API_PORT ~= 80 then
-      host_header = API_HOST .. ":" .. API_PORT
-    end
 
     local req = method .. " " .. path .. " HTTP/1.0\r\n"
       .. "Host: " .. host_header .. "\r\n"
