@@ -20,29 +20,6 @@ return function()
   G.CHALLENGE_HUB_CODE = G.CHALLENGE_HUB_CODE or ""
   G.CHALLENGE_HUB_STATUS = G.CHALLENGE_HUB_STATUS or ""
   G.CHALLENGE_HUB_STATUS_COLOUR = G.CHALLENGE_HUB_STATUS_COLOUR or G.C.WHITE
-  G.CHALLENGE_HUB_ACTIVE_CODE = G.CHALLENGE_HUB_ACTIVE_CODE or nil
-
-  -- Send win/loss results to the hub server when a hub challenge run ends
-  local function send_hub_result(won)
-    local code = G.CHALLENGE_HUB_ACTIVE_CODE
-    G.CHALLENGE_HUB_ACTIVE_CODE = nil
-    if not code or not HubAPI then return end
-    HubAPI.send_result(code, won)
-  end
-
-  -- Hook into win
-  local _old_win_game = G.FUNCS.win_game
-  function G.FUNCS.win_game(e)
-    send_hub_result(true)
-    if _old_win_game then _old_win_game(e) end
-  end
-
-  -- Hook into game over (loss) — wraps the original game_over function
-  local _old_game_over = G.FUNCS.game_over
-  function G.FUNCS.game_over(e)
-    send_hub_result(false)
-    if _old_game_over then _old_game_over(e) end
-  end
 
   -- ============================================================
   -- Open overlay
@@ -188,8 +165,8 @@ return function()
     proxy.calculate = function(self, context) end
     SMODS.Challenges[challenge.id] = proxy
 
-    G.CHALLENGE_HUB_ACTIVE_CODE = code
     G.FUNCS.start_run(e, { stake = 1, challenge = challenge })
+    HubAPI.increment_plays(code)
   end
 
   -- ============================================================

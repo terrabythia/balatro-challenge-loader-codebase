@@ -153,7 +153,7 @@ export async function DELETE(
     newCode = generateCode();
     try {
       await db.query(
-        `UPDATE content SET code = $1, status = 'draft', updated_at = NOW()
+        `UPDATE content SET code = $1, status = 'draft', plays = 0, wins = 0, losses = 0, updated_at = NOW()
          WHERE code = $2`,
         [newCode, code],
       );

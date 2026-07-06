@@ -7,11 +7,30 @@ return function()
   local socket = require("socket")
 
   -- ============================================================
-  -- CONFIGURATION
+  -- CONFIGURATION (read from config.json; fallback to localhost)
   -- ============================================================
-  -- local API_HOST = "hub.challenge-hub.online"
-  local API_HOST = "hub-dev.challenge-hub.online"
-  local API_USE_HTTPS = false
+  local function load_config()
+    local config_path = SMODS.current_mod.path .. "config.json"
+    local ok, raw = pcall(SMODS.NFS.read, config_path)
+    if not ok or not raw then
+      sendWarnMessage("Challenge Hub: Cannot read config.json — using localhost fallback", "Challenge Hub")
+      return nil
+    end
+    local ok2, data = pcall(JSON.decode, raw)
+    if not ok2 or not data then
+      sendWarnMessage("Challenge Hub: Invalid config.json — using localhost fallback", "Challenge Hub")
+      return nil
+    end
+    return data
+  end
+
+  local config = load_config() or {}
+  local API_HOST = config.api_host or "localhost:3000"
+  local API_USE_HTTPS = config.api_use_https or false
+
+  -- Parse host:port from API_HOST (e.g. "localhost:3000" → host, 3000)
+  local API_HOSTNAME, API_PORT = API_HOST:match("^([^:]+):?(%d*)$")
+  API_PORT = (API_PORT ~= "" and tonumber(API_PORT)) or (API_USE_HTTPS and 443 or 80)
   -- ============================================================
 
   local HubAPI = {}
@@ -19,8 +38,9 @@ return function()
   --- Try socket.http first (handles chunked encoding, redirects, etc.)
   --- Falls back to ssl.https for HTTPS, then raw TCP.
   local http = nil
+  local has_ssl = false
   if API_USE_HTTPS then
-    pcall(function() http = require("ssl.https") end)
+    pcall(function() http = require("ssl.https"); has_ssl = true end)
     if not http then
       sendWarnMessage("Challenge Hub: luasec not available — HTTPS requests may fail. Install luasec for HTTPS support.", "Challenge Hub")
       pcall(function() http = require("socket.http") end)
@@ -29,7 +49,7 @@ return function()
     pcall(function() http = require("socket.http") end)
   end
 
-  local scheme = API_USE_HTTPS and http and "https" or "http"
+  local scheme = (API_USE_HTTPS and has_ssl) and "https" or "http"
 
   --- Perform an HTTP request.
   --- Returns (data, nil) on success, or (nil, error_message) on failure.
@@ -61,7 +81,7 @@ return function()
     client:settimeout(5)
     client:setoption("tcp-nodelay", true)
 
-    local ok, connect_err = client:connect(API_HOST, 80)
+    local ok, connect_err = client:connect(API_HOSTNAME, API_PORT)
     if not ok then
       client:close()
       return nil, "Connection failed: " .. (connect_err or "unknown")
@@ -150,13 +170,26 @@ return function()
     return false, err or "unexpected response"
   end
 
-  --- Send the result of a played challenge.
-  --- Sends a POST with JSON body { won: boolean }.
-  function HubAPI.send_result(code, won)
-    local body = '{"won":' .. tostring(won) .. '}'
-    local path = "/api/content/" .. code .. "/result"
+  --- Increment the play count for a challenge. No auth needed.
+  --- Only increments if the challenge is published.
+  function HubAPI.increment_plays(code)
+    local path = "/api/content/" .. code .. "/play"
 
-    -- POST with body (uses raw TCP since socket.http may not handle POST bodies)
+    -- Try socket.http POST (simple form: second arg = body)
+    if http then
+      local url = scheme .. "://" .. API_HOST .. path
+      local _, status_code = http.request(url, "")
+      if status_code == 200 then
+        return true
+      end
+      return false, "Server returned HTTP " .. tostring(status_code)
+    end
+
+    -- Fallback: raw TCP POST (HTTP only)
+    if API_USE_HTTPS then
+      return false, "Cannot connect via HTTPS without luasec."
+    end
+
     local client, err = socket.tcp()
     if not client then
       return false, "socket.tcp() failed: " .. (err or "unknown")
@@ -165,35 +198,31 @@ return function()
     client:settimeout(5)
     client:setoption("tcp-nodelay", true)
 
-    local port = API_USE_HTTPS and 443 or 80
-    local ok, connect_err = client:connect(API_HOST, port)
+    local ok, connect_err = client:connect(API_HOSTNAME, API_PORT)
     if not ok then
       client:close()
       return false, "Connection failed: " .. (connect_err or "unknown")
     end
 
+    local body = ""
     local host_header = API_HOST
-    local req = "POST " .. path .. " HTTP/1.0\r\n"
+    local req = "POST " .. path .. " HTTP/1.1\r\n"
       .. "Host: " .. host_header .. "\r\n"
-      .. "Content-Type: application/json\r\n"
-      .. "Content-Length: " .. #body .. "\r\n"
+      .. "Content-Length: 0\r\n"
       .. "Connection: close\r\n"
       .. "\r\n"
       .. body
 
     client:send(req)
-
-    -- Read status line
     local status_line = client:receive("*l")
+    client:close()
+
     if not status_line then
-      client:close()
       return false, "No response"
     end
 
     local status_code = status_line:match("HTTP/%d%.%d (%d+)")
-    client:close()
-
-    if status_code == "200" or status_code == "201" then
+    if status_code == "200" then
       return true
     end
     return false, "Server returned " .. (status_code or "?")

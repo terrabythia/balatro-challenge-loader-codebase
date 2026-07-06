@@ -1,7 +1,0 @@
-{
-  "name": "challenge-loader",
-  "private": true,
-  "scripts": {
-    "dev": "cd web && bun run dev"
-  }
-}

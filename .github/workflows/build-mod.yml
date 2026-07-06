@@ -1,0 +1,46 @@
+name: Build Mod
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "mod/**"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bump version
+        id: bump
+        run: |
+          NEW_VERSION=$(bash scripts/bump-mod-version.sh)
+          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Apply production config
+        run: bash scripts/build-mod.sh
+
+      - name: Package mod
+        run: |
+          cd mod
+          zip -r ../challenge-loader.zip . \
+            -x "AGENTS.md" \
+            -x "config.production.json"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: challenge-loader-${{ steps.bump.outputs.version }}
+          path: challenge-loader.zip
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add mod/mod.json
+          git commit -m "bump mod to v${{ steps.bump.outputs.version }} [skip ci]"
+          git push
