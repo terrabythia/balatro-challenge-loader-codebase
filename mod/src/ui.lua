@@ -148,7 +148,13 @@ return function()
     G.CHALLENGE_HUB_STATUS = "Downloading..."
     G.CHALLENGE_HUB_STATUS_COLOUR = G.C.WHITE
 
-    local data, err = HubAPI and HubAPI.get_by_code(code)
+    if not HubAPI then
+      G.CHALLENGE_HUB_STATUS = "HTTP client not loaded — check socket"
+      G.CHALLENGE_HUB_STATUS_COLOUR = G.C.RED
+      return
+    end
+
+    local data, err = HubAPI.get_by_code(code)
 
     if not data then
       G.CHALLENGE_HUB_STATUS = err or "Failed to fetch challenge"
