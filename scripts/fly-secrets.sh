@@ -10,7 +10,7 @@ set +a
 
 fly secrets set \
   DATABASE_URL="$DATABASE_URL" \
-  BASE_URL="https://hub.challenge-hub.online" \
+  BASE_URL="$BASE_URL" \
   DISCORD_CLIENT_ID="$DISCORD_CLIENT_ID" \
   DISCORD_CLIENT_SECRET="$DISCORD_CLIENT_SECRET" \
   JWT_SECRET="$JWT_SECRET" \

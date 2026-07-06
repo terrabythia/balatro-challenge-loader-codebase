@@ -17,7 +17,7 @@ set +a
 fly secrets set \
   --app "$APP" \
   DATABASE_URL="$DATABASE_URL" \
-  BASE_URL="https://balatro-challenge-hub-dev.fly.dev" \
+  BASE_URL="$BASE_URL" \
   DISCORD_CLIENT_ID="$DISCORD_CLIENT_ID" \
   DISCORD_CLIENT_SECRET="$DISCORD_CLIENT_SECRET" \
   JWT_SECRET="$JWT_SECRET" \
