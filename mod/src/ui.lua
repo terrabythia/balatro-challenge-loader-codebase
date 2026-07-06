@@ -26,7 +26,7 @@ return function()
   local function send_hub_result(won)
     local code = G.CHALLENGE_HUB_ACTIVE_CODE
     G.CHALLENGE_HUB_ACTIVE_CODE = nil
-    if not code then return end
+    if not code or not HubAPI then return end
     HubAPI.send_result(code, won)
   end
 
@@ -148,7 +148,7 @@ return function()
     G.CHALLENGE_HUB_STATUS = "Downloading..."
     G.CHALLENGE_HUB_STATUS_COLOUR = G.C.WHITE
 
-    local data, err = HubAPI.get_by_code(code)
+    local data, err = HubAPI and HubAPI.get_by_code(code)
 
     if not data then
       G.CHALLENGE_HUB_STATUS = err or "Failed to fetch challenge"
