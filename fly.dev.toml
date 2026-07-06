@@ -5,8 +5,8 @@ primary_region = 'ams'
   dockerfile = 'Dockerfile'
 
   [build.args]
-    NEXT_PUBLIC_SUPABASE_URL = 'https://placeholder.supabase.co'
-    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'placeholder'
+    NEXT_PUBLIC_SUPABASE_URL = 'https://wzibnlshgoknzrnkfebi.supabase.co'
+    NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_n9C-klXBt4c4zRIWFm6kaA_YN4tfvpE'
 
 [env]
   PORT = '3000'
