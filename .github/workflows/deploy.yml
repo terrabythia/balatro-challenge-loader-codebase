@@ -2,12 +2,12 @@ name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [main, development]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: Production
+    environment: ${{ github.ref_name == 'main' && 'Production' || 'Development' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,6 +31,13 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy to Fly.io
-        run: flyctl deploy --remote-only
+        run: |
+          if [ "${{ github.ref_name }}" = "development" ]; then
+            flyctl deploy --app balatro-challenge-hub-dev --config fly.dev.toml --remote-only \
+              --build-arg NEXT_PUBLIC_SUPABASE_URL="${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" \
+              --build-arg NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}"
+          else
+            flyctl deploy --remote-only
+          fi
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
