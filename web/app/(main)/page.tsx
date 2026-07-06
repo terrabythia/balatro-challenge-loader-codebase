@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { db } from "@/lib/db";
+import RealtimeRefresh from "@/components/realtime-refresh";
 
-export const revalidate = 60; // revalidate every 60 seconds
+export const revalidate = 0; // always fresh
 
 interface ChallengeRow {
   code: string;
@@ -83,6 +84,7 @@ export default async function ExplorePage() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
+      <RealtimeRefresh />
       <div className="mb-10">
         <h1 className="text-2xl font-bold">Explore Challenges</h1>
         <p className="mt-2 text-sm text-white/40">
