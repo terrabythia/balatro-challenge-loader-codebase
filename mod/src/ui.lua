@@ -27,7 +27,34 @@ return function()
   function G.FUNCS.challenge_hub_add_open(e)
     G.CHALLENGE_HUB_CODE = ""
     G.CHALLENGE_HUB_STATUS = ""
-    G.FUNCS.overlay_menu({ definition = G.UIDEF.challenge_hub_add_overlay() })
+
+    local def = G.UIDEF.challenge_hub_add_overlay()
+
+    -- Coerce any table-typed text fields to strings before the engine tries
+    -- to measure them (getWidth crashes on tables).
+    local function fix_text_fields(node)
+      if type(node) ~= "table" then return end
+      if node.config then
+        for _, key in ipairs({"text", "prompt_text"}) do
+          if type(node.config[key]) == "table" then
+            local ok, joined = pcall(function() return table.concat(node.config[key], " ") end)
+            if ok and type(joined) == "string" then
+              node.config[key] = joined
+            end
+          end
+        end
+      end
+      for _, key in ipairs({"nodes", "contents", "children"}) do
+        if type(node[key]) == "table" then
+          for _, child in ipairs(node[key]) do
+            fix_text_fields(child)
+          end
+        end
+      end
+    end
+    fix_text_fields(def)
+
+    G.FUNCS.overlay_menu({ definition = def })
   end
 
   -- ============================================================
@@ -143,7 +170,7 @@ return function()
 
     return create_UIBox_generic_options({
       back_func = "challenge_hub_add_back",
-      back_label = { "Back" },
+      back_label = "Back",
       contents = {
         {
           n = G.UIT.R,
