@@ -15,7 +15,7 @@ jobs:
           version: latest
 
       - name: Login to Supabase
-        run: echo "$SUPABASE_ACCESS_TOKEN" | supabase login --token-stdin
+        run: supabase login --token "$SUPABASE_ACCESS_TOKEN"
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
