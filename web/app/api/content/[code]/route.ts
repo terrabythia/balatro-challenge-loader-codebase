@@ -1,52 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireAuth, getSession } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 
 // GET /api/content/:code — get single by code
-// Returns published content for everyone. Returns drafts to the owner when authenticated.
-// Mod can access drafts with ?secret= query param (matches MOD_API_SECRET env var).
+// The code itself is the authorization — codes are unguessable (21.9B
+// combinations). Returns draft or published, no auth required.
 export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ code: string }> }
+  _req: NextRequest,
+  { params }: { params: Promise<{ code: string }> },
 ) {
   const { code } = await params;
-  const session = await getSession();
-  const url = new URL(req.url);
-  const modSecret = url.searchParams.get("secret");
-  const isMod = modSecret !== null && modSecret === process.env.MOD_API_SECRET;
 
-  let result;
-  if (session || isMod) {
-    // Authenticated or mod — can view all published + own drafts (or all drafts if mod)
-    const statusFilter = isMod
-      ? "" // mod can see anything
-      : "AND (c.status = 'published' OR (c.status = 'draft' AND c.author_id = $2))";
-
-    result = await db.query(
-      `SELECT c.*, u.username as author,
-              COALESCE(AVG(r.score), 0) as avg_rating,
-              COUNT(r.id)::int as rating_count
-       FROM content c
-       LEFT JOIN users u ON c.author_id = u.id
-       LEFT JOIN ratings r ON r.content_id = c.id
-       WHERE c.code = $1 ${statusFilter}
-       GROUP BY c.id, u.username`,
-      isMod ? [code] : [code, session!.userId]
-    );
-  } else {
-    // Unauthenticated — only see published
-    result = await db.query(
-      `SELECT c.*, u.username as author,
-              COALESCE(AVG(r.score), 0) as avg_rating,
-              COUNT(r.id)::int as rating_count
-       FROM content c
-       LEFT JOIN users u ON c.author_id = u.id
-       LEFT JOIN ratings r ON r.content_id = c.id
-       WHERE c.code = $1 AND c.status = 'published'
-       GROUP BY c.id, u.username`,
-      [code]
-    );
-  }
+  const result = await db.query(
+    `SELECT c.*, u.username as author,
+            COALESCE(AVG(r.score), 0) as avg_rating,
+            COUNT(r.id)::int as rating_count
+     FROM content c
+     LEFT JOIN users u ON c.author_id = u.id
+     LEFT JOIN ratings r ON r.content_id = c.id
+     WHERE c.code = $1
+     GROUP BY c.id, u.username`,
+    [code],
+  );
 
   if (result.rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });

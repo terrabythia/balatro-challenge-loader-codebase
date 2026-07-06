@@ -1,8 +1,6 @@
 --- Challenge Hub API Client
 --- Handles HTTP requests to the Challenge Hub server using luasocket.
 --- Provides get_by_code() and test_connection().
----
---- Configure API_HOST, API_PORT, and API_SECRET below or via mod config.
 
 return function()
   sendInfoMessage("Challenge Hub: HTTP client loaded", "Challenge Hub")
@@ -13,7 +11,6 @@ return function()
   -- ============================================================
   local API_HOST = "hub.challenge-hub.online"
   local API_USE_HTTPS = false
-  local API_SECRET = "332ff12df44075eea1ba1b2d2b06cf18a0d9ef4a0f30de14654f56bc6afd6a0a"
   -- ============================================================
 
   local HubAPI = {}
@@ -138,7 +135,7 @@ return function()
   --- Fetch a challenge (draft or published) by its test code.
   --- Returns (challenge_data, nil) or (nil, error_message).
   function HubAPI.get_by_code(code)
-    local path = "/api/content/" .. code .. "?secret=" .. API_SECRET
+    local path = "/api/content/" .. code
     return HubAPI.request("GET", path)
   end
 
