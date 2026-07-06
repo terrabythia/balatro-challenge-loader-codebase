@@ -28,6 +28,7 @@ interface BuilderData {
     status: string;
     json_data: Record<string, unknown>;
   } | null;
+  isGuest: boolean;
 }
 
 interface ChallengeJson {
@@ -611,6 +612,7 @@ export default function BuildView({
   blinds,
   editCode,
   initialDraft,
+  isGuest,
 }: BuilderData) {
   // Build initial state from server-loaded draft (no loading flash)
   function buildInitialState(): BuilderState {
@@ -859,14 +861,16 @@ export default function BuildView({
             <>
               <button
                 onClick={handlePublish}
-                disabled={publishing}
+                disabled={publishing || isGuest}
+                title={isGuest ? "Log in with Discord to publish" : undefined}
                 className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm font-medium transition-colors disabled:opacity-50"
               >
                 {publishing ? "Saving…" : "Publish Changes"}
               </button>
               <button
                 onClick={() => setShowUnpublishConfirm(true)}
-                disabled={publishing}
+                disabled={publishing || isGuest}
+                title={isGuest ? "Log in with Discord to manage publish status" : undefined}
                 className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-sm font-medium transition-colors disabled:opacity-50"
               >
                 Unpublish
@@ -875,7 +879,8 @@ export default function BuildView({
           ) : (
             <button
               onClick={handlePublish}
-              disabled={publishing || !code}
+              disabled={publishing || !code || isGuest}
+              title={isGuest ? "Log in with Discord to publish" : undefined}
               className="px-4 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-sm font-medium transition-colors disabled:opacity-50"
             >
               {publishing ? "Publishing…" : "Publish"}
@@ -883,6 +888,18 @@ export default function BuildView({
           )}
         </div>
       </div>
+
+      {isGuest && (
+        <div className="sticky top-[7.25rem] z-10 border-b border-amber-500/20 bg-amber-500/5 px-6 py-2">
+          <p className="text-xs text-amber-400/80">
+            You&apos;re logged in as a guest — challenges cannot be published.{" "}
+            <a href="/api/auth/login" className="underline hover:text-amber-300">
+              Log in with Discord
+            </a>{" "}
+            to keep and publish your work.
+          </p>
+        </div>
+      )}
 
       <div className="flex">
         {/* Form */}

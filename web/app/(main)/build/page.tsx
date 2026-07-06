@@ -51,17 +51,18 @@ export default async function BuildPage({
     json_data: Record<string, unknown>;
   } | null = null;
 
-  if (code) {
-    const session = await getSession();
-    if (session) {
-      const result = await db.query(
-        "SELECT name, description, status, json_data FROM content WHERE code = $1 AND author_id = $2",
-        [code, session.userId],
-      );
+  const session = await getSession();
+  const isGuest = session?.isGuest ?? false;
+
+  if (code && session) {
+    const ownershipColumn = isGuest ? "guest_id" : "author_id";
+    const result = await db.query(
+      `SELECT name, description, status, json_data FROM content WHERE code = $1 AND ${ownershipColumn} = $2`,
+      [code, session.userId],
+    );
       if (result.rows.length > 0) {
         initialDraft = result.rows[0] as typeof initialDraft;
       }
-    }
   }
 
   return (
@@ -73,6 +74,7 @@ export default async function BuildPage({
       blinds={blinds}
       editCode={code ?? null}
       initialDraft={initialDraft}
+      isGuest={isGuest}
     />
   );
 }

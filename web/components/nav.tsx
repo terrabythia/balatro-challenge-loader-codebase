@@ -6,7 +6,7 @@ export default async function Nav() {
   const session = await getSession();
   let username: string | null = null;
 
-  if (session) {
+  if (session && !session.isGuest) {
     const result = await db.query("SELECT username FROM users WHERE id = $1", [
       session.userId,
     ]);
@@ -44,17 +44,28 @@ export default async function Nav() {
         <div className="flex items-center gap-3">
           {session ? (
             <>
-              <span className="text-sm text-white/40">{username}</span>
-              <a
-                href="/api/auth/logout"
-                className="px-3 py-1.5 rounded-lg text-sm text-white/40 hover:text-white hover:bg-white/5 transition-colors"
-              >
-                Log out
-              </a>
+              <span className="text-sm text-white/40">
+                {session.isGuest ? "Guest" : username}
+              </span>
+              {session.isGuest ? (
+                <a
+                  href="/api/auth/login"
+                  className="px-3 py-1.5 rounded-lg text-sm bg-white/10 hover:bg-white/20 text-white transition-colors"
+                >
+                  Log in to publish
+                </a>
+              ) : (
+                <a
+                  href="/api/auth/logout"
+                  className="px-3 py-1.5 rounded-lg text-sm text-white/40 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  Log out
+                </a>
+              )}
             </>
           ) : (
             <a
-              href="/api/auth/login"
+              href="/login"
               className="px-3 py-1.5 rounded-lg text-sm bg-white/10 hover:bg-white/20 text-white transition-colors"
             >
               Log in

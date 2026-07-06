@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSession } from "@/lib/auth";
+import { createSession, getSession, claimGuestContent } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 function baseUrl() {
@@ -65,10 +65,23 @@ export async function GET(req: NextRequest) {
     );
     console.log("[auth] User saved, creating session...");
 
+    // Check if the user had a guest session — claim their drafts
+    const guestSession = await getSession();
+    let claimedCount = 0;
+    if (guestSession?.isGuest) {
+      claimedCount = await claimGuestContent(guestSession.userId, user.id);
+      console.log("[auth] Claimed", claimedCount, "drafts from guest", guestSession.userId);
+    }
+
+    // Create Discord session
     await createSession(user.id);
     console.log("[auth] Session created, redirecting home");
 
-    return NextResponse.redirect(new URL("/", baseUrl()));
+    const homeUrl = new URL("/", baseUrl());
+    if (claimedCount > 0) {
+      homeUrl.searchParams.set("claimed", String(claimedCount));
+    }
+    return NextResponse.redirect(homeUrl);
   } catch (err) {
     console.error("[auth] Unexpected error:", err);
     return NextResponse.redirect(new URL("/login?error=unknown", baseUrl()));

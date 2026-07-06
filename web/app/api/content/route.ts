@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   let session;
   try {
-    session = await requireAuth();
+    session = await requireAuth({ allowGuest: true });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -91,12 +91,13 @@ export async function POST(req: NextRequest) {
     code = generateCode();
     try {
       await db.query(
-        `INSERT INTO content (type, code, author_id, name, description, tags, json_data)
-         VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb)`,
+        `INSERT INTO content (type, code, author_id, guest_id, name, description, tags, json_data)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)`,
         [
           parsed.data.type,
           code,
-          session.userId,
+          session.isGuest ? null : session.userId,
+          session.isGuest ? session.userId : null,
           parsed.data.name,
           parsed.data.description || null,
           parsed.data.tags || [],

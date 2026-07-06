@@ -37,7 +37,7 @@ export async function PUT(
 ) {
   let session;
   try {
-    session = await requireAuth();
+    session = await requireAuth({ allowGuest: true });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -45,15 +45,19 @@ export async function PUT(
   const { code } = await params;
   const body = await req.json();
 
-  // Verify ownership
+  // Verify ownership (guest via guest_id, regular via author_id)
   const existing = await db.query(
-    "SELECT author_id FROM content WHERE code = $1",
-    [code]
+    "SELECT author_id, guest_id FROM content WHERE code = $1",
+    [code],
   );
   if (existing.rows.length === 0) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
-  if (existing.rows[0].author_id !== session.userId) {
+  const row = existing.rows[0] as { author_id: string | null; guest_id: string | null };
+  const isOwner = session.isGuest
+    ? row.guest_id === session.userId
+    : row.author_id === session.userId;
+  if (!isOwner) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -104,15 +108,17 @@ export async function DELETE(
 ) {
   let session;
   try {
-    session = await requireAuth();
+    session = await requireAuth({ allowGuest: true });
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { code } = await params;
+
+  const ownershipColumn = session.isGuest ? "guest_id" : "author_id";
   const result = await db.query(
-    "DELETE FROM content WHERE code = $1 AND author_id = $2 RETURNING id",
-    [code, session.userId]
+    `DELETE FROM content WHERE code = $1 AND ${ownershipColumn} = $2 RETURNING id`,
+    [code, session.userId],
   );
 
   if (result.rows.length === 0) {

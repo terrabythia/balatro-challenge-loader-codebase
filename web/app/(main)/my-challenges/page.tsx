@@ -9,13 +9,14 @@ export default async function MyChallengesPage() {
     redirect("/login");
   }
 
+  const ownershipColumn = session.isGuest ? "c.guest_id" : "c.author_id";
   const result = await db.query(
     `SELECT c.code, c.name, c.status, c.downloads, c.created_at, c.updated_at,
             COALESCE(AVG(r.score)::float, 0) as avg_rating,
             COUNT(r.id)::int as rating_count
      FROM content c
      LEFT JOIN ratings r ON r.content_id = c.id
-     WHERE c.author_id = $1 AND c.type = 'challenge'
+     WHERE ${ownershipColumn} = $1 AND c.type = 'challenge'
      GROUP BY c.id
      ORDER BY c.updated_at DESC`,
     [session.userId],

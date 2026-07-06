@@ -18,6 +18,13 @@ export async function POST(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  if (session.isGuest) {
+    return NextResponse.json(
+      { error: "Log in with Discord to publish challenges" },
+      { status: 403 },
+    );
+  }
+
   const { code } = await params;
 
   const existing = await db.query(
@@ -109,6 +116,13 @@ export async function DELETE(
     session = await requireAuth();
   } catch {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (session.isGuest) {
+    return NextResponse.json(
+      { error: "Log in with Discord to manage publish status" },
+      { status: 403 },
+    );
   }
 
   const { code } = await params;

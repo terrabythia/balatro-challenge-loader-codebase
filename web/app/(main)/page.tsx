@@ -44,7 +44,12 @@ async function fetchChallenges(
   return result.rows as ChallengeRow[];
 }
 
-export default async function ExplorePage() {
+export default async function ExplorePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ claimed?: string }>;
+}) {
+  const sp = await searchParams;
   const [recent, popular, topRated] = await Promise.all([
     fetchChallenges("new"),
     fetchChallenges("downloads"),
@@ -53,6 +58,15 @@ export default async function ExplorePage() {
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12">
+      {sp.claimed && (
+        <div className="mb-8 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+          <p className="text-sm text-emerald-400">
+            {sp.claimed === "1"
+              ? "Your draft challenge has been saved to your account!"
+              : `${sp.claimed} draft challenges have been saved to your account!`}
+          </p>
+        </div>
+      )}
       <div className="mb-10">
         <h1 className="text-2xl font-bold">Explore Challenges</h1>
         <p className="mt-2 text-sm text-white/40">

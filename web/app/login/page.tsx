@@ -1,4 +1,18 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 export default function LoginPage() {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function continueAsGuest() {
+    setLoading(true);
+    await fetch("/api/auth/guest", { method: "POST" });
+    router.push("/my-challenges");
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="w-full max-w-sm rounded-xl border border-white/5 bg-white/[0.03] p-8">
@@ -19,6 +33,25 @@ export default function LoginPage() {
           </svg>
           Log in with Discord
         </a>
+
+        <div className="mt-6 flex items-center gap-3">
+          <div className="h-px flex-1 bg-white/10" />
+          <span className="text-xs text-white/20">or</span>
+          <div className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <button
+          onClick={continueAsGuest}
+          disabled={loading}
+          className="mt-6 flex h-11 w-full items-center justify-center rounded-lg border border-white/10 text-sm text-white/60 hover:border-white/20 hover:text-white/80 transition-colors disabled:opacity-50"
+        >
+          {loading ? "Continuing…" : "Continue as Guest"}
+        </button>
+
+        <p className="mt-4 text-xs text-amber-400/60">
+          As a guest you can create draft challenges, but you cannot publish
+          them. Log in with Discord later to keep and publish your work.
+        </p>
       </div>
     </div>
   );
