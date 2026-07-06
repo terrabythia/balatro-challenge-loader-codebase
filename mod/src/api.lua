@@ -11,8 +11,8 @@ return function()
   -- ============================================================
   -- CONFIGURATION
   -- ============================================================
-  local API_HOST = "balatro-challenge-hub.fly.dev"
-  local API_USE_HTTPS = true
+  local API_HOST = "hub.challenge-hub.online"
+  local API_USE_HTTPS = false
   local API_SECRET = "332ff12df44075eea1ba1b2d2b06cf18a0d9ef4a0f30de14654f56bc6afd6a0a"
   -- ============================================================
 
