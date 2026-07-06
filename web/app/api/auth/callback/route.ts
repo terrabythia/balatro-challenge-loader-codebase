@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-// Base URL derived from the Discord redirect URI (set via Fly.io secrets)
 function baseUrl() {
-  const redirectUri = process.env.DISCORD_REDIRECT_URI || "https://hub.challenge-hub.online";
-  const url = new URL(redirectUri);
-  return url.origin;
+  return process.env.BASE_URL || "http://localhost:3000";
+}
+
+function callbackUrl() {
+  return baseUrl() + "/api/auth/callback";
 }
 
 export async function GET(req: NextRequest) {
@@ -16,7 +17,6 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Step 1: Exchange code for access token
     console.log("[auth] Exchanging code for token...");
     const tokenRes = await fetch("https://discord.com/api/oauth2/token", {
       method: "POST",
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
         client_secret: process.env.DISCORD_CLIENT_SECRET!,
         grant_type: "authorization_code",
         code,
-        redirect_uri: process.env.DISCORD_REDIRECT_URI!,
+        redirect_uri: callbackUrl(),
       }).toString(),
     });
 
@@ -39,7 +39,6 @@ export async function GET(req: NextRequest) {
     const tokenData = await tokenRes.json();
     console.log("[auth] Token received, fetching user...");
 
-    // Step 2: Fetch user info from Discord
     const userRes = await fetch("https://discord.com/api/users/@me", {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
@@ -56,7 +55,6 @@ export async function GET(req: NextRequest) {
       ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`
       : null;
 
-    // Step 3: Upsert user in database
     console.log("[auth] Upserting user in DB...");
     await db.query(
       `INSERT INTO users (id, username, avatar_url)
@@ -67,7 +65,6 @@ export async function GET(req: NextRequest) {
     );
     console.log("[auth] User saved, creating session...");
 
-    // Step 4: Create session and redirect home
     await createSession(user.id);
     console.log("[auth] Session created, redirecting home");
 
