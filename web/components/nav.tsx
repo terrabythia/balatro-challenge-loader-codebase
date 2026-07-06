@@ -6,21 +6,12 @@ import GuestActions from "@/components/guest-actions";
 export default async function Nav() {
   const session = await getSession();
   let username: string | null = null;
-  let guestHasDrafts = false;
 
   if (session && !session.isGuest) {
     const result = await db.query("SELECT username FROM users WHERE id = $1", [
       session.userId,
     ]);
     username = result.rows[0]?.username ?? null;
-  }
-
-  if (session?.isGuest) {
-    const result = await db.query(
-      "SELECT 1 FROM content WHERE guest_id = $1 LIMIT 1",
-      [session.userId],
-    );
-    guestHasDrafts = result.rows.length > 0;
   }
 
   return (
@@ -65,7 +56,7 @@ export default async function Nav() {
                   >
                     Log in with Discord
                   </a>
-                  <GuestActions hasDrafts={guestHasDrafts} />
+                  <GuestActions />
                 </>
               ) : (
                 <a
