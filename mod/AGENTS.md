@@ -1,5 +1,13 @@
 # Challenge Loader — Agent Notes
 
+## Branching
+
+- **Never push directly to `main` or `development`.**
+- Work on feature branches. If no feature branch exists for the current task, create one.
+- When a task should have its own feature branch, create it and remind me to merge
+  the current feature branch first.
+- Push to the feature branch, not to `main`/`development`.
+
 ## Mod version
 
 When any file in `mod/` changes, bump the version before committing:
