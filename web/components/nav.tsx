@@ -1,16 +1,26 @@
 import Link from "next/link";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
+import GuestActions from "@/components/guest-actions";
 
 export default async function Nav() {
   const session = await getSession();
   let username: string | null = null;
+  let guestHasDrafts = false;
 
   if (session && !session.isGuest) {
     const result = await db.query("SELECT username FROM users WHERE id = $1", [
       session.userId,
     ]);
     username = result.rows[0]?.username ?? null;
+  }
+
+  if (session?.isGuest) {
+    const result = await db.query(
+      "SELECT 1 FROM content WHERE guest_id = $1 LIMIT 1",
+      [session.userId],
+    );
+    guestHasDrafts = result.rows.length > 0;
   }
 
   return (
@@ -48,12 +58,7 @@ export default async function Nav() {
                 {session.isGuest ? "Guest" : username}
               </span>
               {session.isGuest ? (
-                <a
-                  href="/api/auth/login"
-                  className="px-3 py-1.5 rounded-lg text-sm bg-white/10 hover:bg-white/20 text-white transition-colors"
-                >
-                  Log in to publish
-                </a>
+                <GuestActions hasDrafts={guestHasDrafts} />
               ) : (
                 <a
                   href="/api/auth/logout"

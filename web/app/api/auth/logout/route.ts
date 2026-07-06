@@ -1,7 +1,21 @@
-import { NextResponse } from "next/server";
-import { destroySession } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getSession, destroySession } from "@/lib/auth";
+import { db } from "@/lib/db";
 
-export async function GET() {
+function baseUrl() {
+  return process.env.BASE_URL || "http://localhost:3000";
+}
+
+export async function GET(req: NextRequest) {
+  const deleteDrafts = req.nextUrl.searchParams.get("deleteDrafts") === "1";
+  const session = await getSession();
+
+  if (deleteDrafts && session?.isGuest) {
+    await db.query("DELETE FROM content WHERE guest_id = $1", [
+      session.userId,
+    ]);
+  }
+
   await destroySession();
-  return NextResponse.redirect(new URL("/", "http://localhost:3000"));
+  return NextResponse.redirect(new URL("/", baseUrl()));
 }
