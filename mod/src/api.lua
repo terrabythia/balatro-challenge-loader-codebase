@@ -9,7 +9,7 @@ return function()
   -- ============================================================
   -- CONFIGURATION
   -- ============================================================
-  # local API_HOST = "hub.challenge-hub.online"
+  -- local API_HOST = "hub.challenge-hub.online"
   local API_HOST = "hub-dev.challenge-hub.online"
   local API_USE_HTTPS = false
   -- ============================================================
