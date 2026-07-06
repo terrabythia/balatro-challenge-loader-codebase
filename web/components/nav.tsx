@@ -1,10 +1,26 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import { getSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 import GuestActions from "@/components/guest-actions";
 
+const NAV_LINKS = [
+  { href: "/", label: "Explore", match: (p: string) => p === "/" },
+  { href: "/my-challenges", label: "My Challenges", match: (p: string) => p.startsWith("/my-challenges") },
+  { href: "/install", label: "Install Mod", match: (p: string) => p.startsWith("/install") },
+] as const;
+
+function navLinkClasses(active: boolean): string {
+  return `px-3 py-1.5 rounded-lg text-sm transition-colors ${
+    active
+      ? "text-white bg-white/10"
+      : "text-white/60 hover:text-white hover:bg-white/5"
+  }`;
+}
+
 export default async function Nav() {
   const session = await getSession();
+  const pathname = (await headers()).get("x-pathname") ?? "/";
   let username: string | null = null;
 
   if (session && !session.isGuest) {
@@ -22,24 +38,15 @@ export default async function Nav() {
             Challenge Hub
           </Link>
           <div className="flex items-center gap-1">
-            <Link
-              href="/"
-              className="px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              Explore
-            </Link>
-            <Link
-              href="/my-challenges"
-              className="px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              My Challenges
-            </Link>
-            <Link
-              href="/install"
-              className="px-3 py-1.5 rounded-lg text-sm text-white/60 hover:text-white hover:bg-white/5 transition-colors"
-            >
-              Install Mod
-            </Link>
+            {NAV_LINKS.map(({ href, label, match }) => (
+              <Link
+                key={href}
+                href={href}
+                className={navLinkClasses(match(pathname))}
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
         <div className="flex items-center gap-3">
