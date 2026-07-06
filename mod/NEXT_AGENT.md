@@ -1,5 +1,11 @@
 NEXT AGENT NOTES — Challenge Loader
 
+⚠️  When any file in mod/ changes, bump the version:
+   bash scripts/bump-mod-version.sh
+   The version lives in mod/mod.json. Commit the change separately.
+
+---
+
 Location: challenge-loader/
 Created: 2026-07-02 by assistant
 Updated: 2026-07-02 — paste button, code format, crash fixes all resolved
