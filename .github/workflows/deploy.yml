@@ -15,11 +15,6 @@ jobs:
         with:
           version: latest
 
-      - name: Login to Supabase
-        run: supabase login --token "$SUPABASE_ACCESS_TOKEN"
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
       - name: Push Supabase migrations
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
