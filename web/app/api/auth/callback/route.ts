@@ -2,10 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSession } from "@/lib/auth";
 import { db } from "@/lib/db";
 
+// Base URL derived from the Discord redirect URI (set via Fly.io secrets)
+function baseUrl() {
+  const redirectUri = process.env.DISCORD_REDIRECT_URI || "https://hub.challenge-hub.online";
+  const url = new URL(redirectUri);
+  return url.origin;
+}
+
 export async function GET(req: NextRequest) {
   const code = req.nextUrl.searchParams.get("code");
   if (!code) {
-    return NextResponse.redirect(new URL("/login?error=no_code", req.url));
+    return NextResponse.redirect(new URL("/login?error=no_code", baseUrl()));
   }
 
   try {
@@ -26,7 +33,7 @@ export async function GET(req: NextRequest) {
     if (!tokenRes.ok) {
       const errText = await tokenRes.text();
       console.error("[auth] Token exchange failed:", tokenRes.status, errText);
-      return NextResponse.redirect(new URL("/login?error=token", req.url));
+      return NextResponse.redirect(new URL("/login?error=token", baseUrl()));
     }
 
     const tokenData = await tokenRes.json();
@@ -39,7 +46,7 @@ export async function GET(req: NextRequest) {
 
     if (!userRes.ok) {
       console.error("[auth] User fetch failed:", userRes.status);
-      return NextResponse.redirect(new URL("/login?error=user", req.url));
+      return NextResponse.redirect(new URL("/login?error=user", baseUrl()));
     }
 
     const user = await userRes.json();
@@ -64,9 +71,9 @@ export async function GET(req: NextRequest) {
     await createSession(user.id);
     console.log("[auth] Session created, redirecting home");
 
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/", baseUrl()));
   } catch (err) {
     console.error("[auth] Unexpected error:", err);
-    return NextResponse.redirect(new URL("/login?error=unknown", req.url));
+    return NextResponse.redirect(new URL("/login?error=unknown", baseUrl()));
   }
 }
