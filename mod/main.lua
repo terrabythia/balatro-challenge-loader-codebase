@@ -32,6 +32,60 @@ else
     sendWarnMessage("Challenge Hub: Failed to load UI: " .. tostring(ui_chunk), "Challenge Hub")
 end
 
+-- Shared function to register a hub challenge into SMODS.Challenges.
+-- Used by both the cache loader and the live Play button flow.
+_G.register_hub_challenge = function(challenge_data)
+    local challenge = {
+        id = challenge_data.key or "hub_challenge",
+        name = challenge_data.name or challenge_data.key or "Hub Challenge",
+        jokers = challenge_data.jokers or {},
+        consumeables = challenge_data.consumeables or {},
+        vouchers = challenge_data.vouchers or {},
+        deck = challenge_data.deck or { type = "Challenge Deck" },
+        restrictions = challenge_data.restrictions or {},
+        rules = challenge_data.rules or {},
+    }
+    local proxy = { id = challenge.id }
+    setmetatable(proxy, { __index = challenge })
+    proxy.calculate = function(self, context) end
+    SMODS.Challenges[challenge.id] = proxy
+    return challenge
+end
+
+-- Load cached hub challenges so they survive game restarts.
+-- Without this, re-entering a saved hub-challenge run crashes because
+-- SMODS.Challenges[id] is nil (only lived in memory from the Play flow).
+local function load_cached_challenges()
+    local hub_dir = mod.path .. "hub_challenges/"
+    local ok, files = pcall(SMODS.NFS.getDirectoryItems, hub_dir)
+    if not ok or not files or #files == 0 then
+        return
+    end
+
+    for _, filename in ipairs(files) do
+        if not filename:match("%.json$") then
+            goto continue
+        end
+
+        local file_path = hub_dir .. filename
+        local ok2, raw = pcall(SMODS.NFS.read, file_path)
+        if not ok2 or not raw then
+            goto continue
+        end
+
+        local ok3, data = pcall(JSON.decode, raw)
+        if not ok3 or not data or not data.json_data then
+            goto continue
+        end
+
+        register_hub_challenge(data.json_data)
+
+        ::continue::
+    end
+end
+
+load_cached_challenges()
+
 -- Test connection to Challenge Hub server
 if HubAPI then
     local connected, err = HubAPI.test_connection()

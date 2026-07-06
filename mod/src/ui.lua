@@ -5,6 +5,9 @@
 return function()
   sendInfoMessage("Challenge Hub: UI module loaded", "Challenge Hub")
 
+  -- Captured during mod init — SMODS.current_mod is nil during UI callbacks
+  local mod_path = SMODS.current_mod.path
+
   -- Ensure common globals exist
   if not G then G = {} end
   G.FUNCS = G.FUNCS or {}
@@ -122,8 +125,6 @@ return function()
     code = code:upper():gsub("%s+", ""):gsub("-", "")
 
     G.CHALLENGE_HUB_CODE = code
-    G.CHALLENGE_HUB_STATUS = "Downloading..."
-    G.CHALLENGE_HUB_STATUS_COLOUR = G.C.WHITE
 
     if not HubAPI then
       G.CHALLENGE_HUB_STATUS = "HTTP client not loaded — check socket"
@@ -131,42 +132,40 @@ return function()
       return
     end
 
-    local data, err = HubAPI.get_by_code(code)
+    G.CHALLENGE_HUB_STATUS = "Downloading..."
+    G.CHALLENGE_HUB_STATUS_COLOUR = G.C.WHITE
 
-    if not data then
-      G.CHALLENGE_HUB_STATUS = err or "Failed to fetch challenge"
-      G.CHALLENGE_HUB_STATUS_COLOUR = G.C.RED
-      return
-    end
+    -- Defer the HTTP fetch to the next frame so the UI renders the loading indicator
+    G.E_MANAGER:add_event(Event({
+      trigger = 'immediate',
+      func = function()
+        local data, err = HubAPI.get_by_code(code)
 
-    local challenge_data = data.json_data
-    if not challenge_data then
-      G.CHALLENGE_HUB_STATUS = "Invalid challenge data from server"
-      G.CHALLENGE_HUB_STATUS_COLOUR = G.C.RED
-      return
-    end
+        if not data then
+          G.CHALLENGE_HUB_STATUS = err or "Failed to fetch challenge"
+          G.CHALLENGE_HUB_STATUS_COLOUR = G.C.RED
+          return
+        end
 
-    local challenge = {
-      id = challenge_data.key or "hub_challenge",
-      name = challenge_data.name or challenge_data.key or "Hub Challenge",
-      jokers = challenge_data.jokers or {},
-      consumeables = challenge_data.consumeables or {},
-      vouchers = challenge_data.vouchers or {},
-      deck = challenge_data.deck or { type = "Challenge Deck" },
-      restrictions = challenge_data.restrictions or {},
-      rules = challenge_data.rules or {},
-    }
+        local challenge_data = data.json_data
+        if not challenge_data then
+          G.CHALLENGE_HUB_STATUS = "Invalid challenge data from server"
+          G.CHALLENGE_HUB_STATUS_COLOUR = G.C.RED
+          return
+        end
 
-    -- Register in SMODS.Challenges so scoring targets resolve.
-    -- Proxy keeps calculate() out of the plain challenge table
-    -- (functions break LÖVE Channel:push serialization on save).
-    local proxy = { id = challenge.id }
-    setmetatable(proxy, { __index = challenge })
-    proxy.calculate = function(self, context) end
-    SMODS.Challenges[challenge.id] = proxy
+        local challenge = register_hub_challenge(challenge_data)
 
-    G.FUNCS.start_run(e, { stake = 1, challenge = challenge })
-    HubAPI.increment_plays(code)
+        -- Cache the challenge so it survives game restarts
+        local cache_dir = mod_path .. "hub_challenges/"
+        SMODS.NFS.createDirectory(cache_dir)
+        local cache_path = cache_dir .. code .. ".json"
+        SMODS.NFS.write(cache_path, JSON.encode(data))
+
+        G.FUNCS.start_run(e, { stake = 1, challenge = challenge })
+        HubAPI.increment_plays(code)
+      end
+    }))
   end
 
   -- ============================================================
