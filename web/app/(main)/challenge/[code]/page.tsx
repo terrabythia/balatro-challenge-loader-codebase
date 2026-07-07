@@ -38,6 +38,7 @@ interface GameItem {
   set?: string;
   effect?: string;
   pos?: { x: number; y: number };
+  soul_pos?: { x: number; y: number };
 }
 
 interface SpriteConfig {
@@ -139,7 +140,7 @@ function EmptySection({ text }: { text: string }) {
 interface ItemEntry {
   name: string;
   detail?: string;
-  sprite?: SpriteConfig & { pos: { x: number; y: number }; displayWidth?: number };
+  sprite?: SpriteConfig & { pos: { x: number; y: number }; displayWidth?: number; overlayPos?: { x: number; y: number } };
 }
 
 function ItemList({
@@ -166,6 +167,7 @@ function ItemList({
               cellHeight={item.sprite.cellHeight}
               displayHeight={32}
               displayWidth={item.sprite.displayWidth}
+              overlayPos={item.sprite.overlayPos}
             />
           )}
           <span>
@@ -221,7 +223,11 @@ export default async function ChallengeDetailPage({
     spriteConfig: SpriteConfig,
   ): ItemEntry["sprite"] {
     if (item?.pos) {
-      return { ...spriteConfig, pos: item.pos };
+      return {
+        ...spriteConfig,
+        pos: item.pos,
+        overlayPos: item.soul_pos,
+      };
     }
     return undefined;
   }

@@ -14,6 +14,7 @@ import DeckEditor, {
   type DeckCard,
   type CardInstance,
 } from "@/components/deck-editor";
+import { publishValidationSchema } from "@/lib/schemas";
 
 // ---- Types ----
 
@@ -453,16 +454,33 @@ function SelectedItemCard({
       {/* Sprite */}
       <div className="flex flex-col items-center gap-1">
         <div
-          className="rounded-sm"
+          className="rounded-sm relative"
           style={{
             width: sprite.cellW,
             height: sprite.cellH,
-            backgroundImage: `url(${sprite.url})`,
-            backgroundSize: `${sprite.width}px ${sprite.height}px`,
-            backgroundPosition: `-${item.pos.x * sprite.cellW}px -${item.pos.y * sprite.cellH}px`,
-            imageRendering: "pixelated",
           }}
-        />
+        >
+          <div
+            className="absolute inset-0 rounded-sm"
+            style={{
+              backgroundImage: `url(${sprite.url})`,
+              backgroundSize: `${sprite.width}px ${sprite.height}px`,
+              backgroundPosition: `-${item.pos.x * sprite.cellW}px -${item.pos.y * sprite.cellH}px`,
+              imageRendering: "pixelated",
+            }}
+          />
+          {item.soul_pos && (
+            <div
+              className="absolute inset-0 rounded-sm"
+              style={{
+                backgroundImage: `url(${sprite.url})`,
+                backgroundSize: `${sprite.width}px ${sprite.height}px`,
+                backgroundPosition: `-${item.soul_pos.x * sprite.cellW}px -${item.soul_pos.y * sprite.cellH}px`,
+                imageRendering: "pixelated",
+              }}
+            />
+          )}
+        </div>
         <span
           className={`text-xs text-center leading-tight max-w-[71px] truncate ${
             isBanned ? "text-red-300/80" : "text-white/60"
@@ -788,6 +806,18 @@ export default function BuildView({
   async function handlePublish() {
     if (!code) return;
     setError(null);
+
+    // Client-side publish validation
+    const parsed = publishValidationSchema.safeParse({
+      description: state.description || "",
+      bannedBlindCount: state.bannedBlinds.length,
+      deckCardCount: state.deckCards.reduce((sum, c) => sum + c.count, 0),
+    });
+    if (!parsed.success) {
+      setError(parsed.error.issues.map((i) => i.message).join(" "));
+      return;
+    }
+
     setPublishing(true);
     try {
       const payload =
@@ -865,9 +895,7 @@ export default function BuildView({
           )}
         </div>
         <div className="flex items-center gap-3">
-          {code && (
-            <CodeDisplay code={code!} size="sm" label="Code:" />
-          )}
+          {code && <CodeDisplay code={code!} size="sm" label="Code:" />}
           {error && <span className="text-sm text-red-400">{error}</span>}
           {status !== "published" && (
             <button
@@ -891,7 +919,11 @@ export default function BuildView({
               <button
                 onClick={() => setShowUnpublishConfirm(true)}
                 disabled={publishing || isGuest}
-                title={isGuest ? "Log in with Discord to manage publish status" : undefined}
+                title={
+                  isGuest
+                    ? "Log in with Discord to manage publish status"
+                    : undefined
+                }
                 className="px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-sm font-medium transition-colors disabled:opacity-50"
               >
                 Unpublish
@@ -914,7 +946,10 @@ export default function BuildView({
         <div className="sticky top-[7.25rem] z-10 border-b border-amber-500/20 bg-amber-500/5 px-6 py-2">
           <p className="text-xs text-amber-400/80">
             You&apos;re logged in as a guest — challenges cannot be published.{" "}
-            <a href="/api/auth/login" className="underline hover:text-amber-300">
+            <a
+              href="/api/auth/login"
+              className="underline hover:text-amber-300"
+            >
               Log in with Discord
             </a>{" "}
             to keep and publish your work.
@@ -943,7 +978,7 @@ export default function BuildView({
               type="text"
               value={state.description}
               onChange={(e) => update({ description: e.target.value })}
-              placeholder="Short description (optional)"
+              placeholder="Description"
               className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-sm placeholder-white/20 outline-none focus:border-white/30"
             />
           </section>
@@ -1415,9 +1450,7 @@ export default function BuildView({
                     )}
                   </h3>
                   <button
-                    onClick={() =>
-                      update({ bannedVouchers: [...vouchers] })
-                    }
+                    onClick={() => update({ bannedVouchers: [...vouchers] })}
                     className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
                   >
                     Ban all
@@ -1546,10 +1579,10 @@ export default function BuildView({
               <h2 className="text-lg font-semibold">Challenge Published!</h2>
               <p className="mt-3 text-sm leading-relaxed text-white/60">
                 Your challenge is now live! Other players can find it on the
-                Explore page. To play it in-game, install the Challenge
-                Loader mod and enter the code{" "}
-                <CodeDisplay code={code!} size="sm" variant="bright" /> on
-                the Challenges screen.
+                Explore page. To play it in-game, install the Challenge Loader
+                mod and enter the code{" "}
+                <CodeDisplay code={code!} size="sm" variant="bright" /> on the
+                Challenges screen.
               </p>
               <div className="mt-6 flex justify-end">
                 <button
