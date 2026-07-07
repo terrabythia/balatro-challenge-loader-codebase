@@ -1255,14 +1255,22 @@ export default function BuildView({
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide">
-                  Banned Jokers{" "}
-                  {state.bannedJokers.length > 0 && (
-                    <span className="text-white/40 font-normal">
-                      ({state.bannedJokers.length})
-                    </span>
-                  )}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide">
+                    Banned Jokers{" "}
+                    {state.bannedJokers.length > 0 && (
+                      <span className="text-white/40 font-normal">
+                        ({state.bannedJokers.length})
+                      </span>
+                    )}
+                  </h3>
+                  <button
+                    onClick={() => update({ bannedJokers: [...jokers] })}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+                  >
+                    Ban all
+                  </button>
+                </div>
                 <SelectedItemList>
                   {state.bannedJokers.map((item, idx) => (
                     <SelectedItemCard
@@ -1292,14 +1300,80 @@ export default function BuildView({
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide">
-                  Banned Consumables{" "}
-                  {state.bannedConsumables.length > 0 && (
-                    <span className="text-white/40 font-normal">
-                      ({state.bannedConsumables.length})
-                    </span>
-                  )}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide">
+                    Banned Consumables{" "}
+                    {state.bannedConsumables.length > 0 && (
+                      <span className="text-white/40 font-normal">
+                        ({state.bannedConsumables.length})
+                      </span>
+                    )}
+                  </h3>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() =>
+                        update({ bannedConsumables: [...consumables] })
+                      }
+                      className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-[10px] transition-colors"
+                    >
+                      Ban all
+                    </button>
+                    <button
+                      onClick={() => {
+                        const planets = consumables.filter(
+                          (c) => c.set === "Planet",
+                        );
+                        const existingIds = new Set(
+                          state.bannedConsumables.map((c) => c.id),
+                        );
+                        const merged = [
+                          ...state.bannedConsumables,
+                          ...planets.filter((p) => !existingIds.has(p.id)),
+                        ];
+                        update({ bannedConsumables: merged });
+                      }}
+                      className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-[10px] transition-colors"
+                    >
+                      Planets
+                    </button>
+                    <button
+                      onClick={() => {
+                        const tarots = consumables.filter(
+                          (c) => c.set === "Tarot",
+                        );
+                        const existingIds = new Set(
+                          state.bannedConsumables.map((c) => c.id),
+                        );
+                        const merged = [
+                          ...state.bannedConsumables,
+                          ...tarots.filter((t) => !existingIds.has(t.id)),
+                        ];
+                        update({ bannedConsumables: merged });
+                      }}
+                      className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-[10px] transition-colors"
+                    >
+                      Tarots
+                    </button>
+                    <button
+                      onClick={() => {
+                        const spectrals = consumables.filter(
+                          (c) => c.set === "Spectral",
+                        );
+                        const existingIds = new Set(
+                          state.bannedConsumables.map((c) => c.id),
+                        );
+                        const merged = [
+                          ...state.bannedConsumables,
+                          ...spectrals.filter((s) => !existingIds.has(s.id)),
+                        ];
+                        update({ bannedConsumables: merged });
+                      }}
+                      className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/10 text-[10px] transition-colors"
+                    >
+                      Spectrals
+                    </button>
+                  </div>
+                </div>
                 <SelectedItemList>
                   {state.bannedConsumables.map((item, idx) => (
                     <SelectedItemCard
@@ -1331,14 +1405,24 @@ export default function BuildView({
               </section>
 
               <section className="space-y-3">
-                <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide">
-                  Banned Vouchers{" "}
-                  {state.bannedVouchers.length > 0 && (
-                    <span className="text-white/40 font-normal">
-                      ({state.bannedVouchers.length})
-                    </span>
-                  )}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-white/80 uppercase tracking-wide">
+                    Banned Vouchers{" "}
+                    {state.bannedVouchers.length > 0 && (
+                      <span className="text-white/40 font-normal">
+                        ({state.bannedVouchers.length})
+                      </span>
+                    )}
+                  </h3>
+                  <button
+                    onClick={() =>
+                      update({ bannedVouchers: [...vouchers] })
+                    }
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+                  >
+                    Ban all
+                  </button>
+                </div>
                 <SelectedItemList>
                   {state.bannedVouchers.map((item, idx) => (
                     <SelectedItemCard
