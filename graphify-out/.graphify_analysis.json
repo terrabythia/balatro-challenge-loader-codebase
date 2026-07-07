@@ -1,0 +1,673 @@
+{
+  "communities": {
+    "0": [
+      "components_consumable_picker",
+      "components_consumable_picker_consumablepicker",
+      "components_consumable_picker_consumablepickerprops",
+      "components_consumable_picker_set_colors",
+      "components_consumable_picker_stories",
+      "components_consumable_picker_stories_default",
+      "components_consumable_picker_stories_sample_consumables",
+      "components_consumable_picker_stories_story",
+      "components_item_picker",
+      "components_item_picker_itempicker",
+      "components_item_picker_itempickerprops",
+      "components_item_picker_pickeritem",
+      "components_item_picker_stories",
+      "components_item_picker_stories_csscheck",
+      "components_item_picker_stories_default",
+      "components_item_picker_stories_emptysearch",
+      "components_item_picker_stories_sample_items",
+      "components_item_picker_stories_story",
+      "components_item_picker_stories_withtooltips",
+      "components_item_picker_tooltipstate",
+      "components_joker_picker",
+      "components_joker_picker_jokerpicker",
+      "components_joker_picker_jokerpickerprops",
+      "components_joker_picker_rarity_colors",
+      "components_joker_picker_rarity_labels",
+      "components_joker_picker_stories",
+      "components_joker_picker_stories_default",
+      "components_joker_picker_stories_filteredsearch",
+      "components_joker_picker_stories_sample_desc",
+      "components_joker_picker_stories_sample_jokers",
+      "components_joker_picker_stories_story",
+      "components_voucher_picker",
+      "components_voucher_picker_stories",
+      "components_voucher_picker_stories_default",
+      "components_voucher_picker_stories_sample_vouchers",
+      "components_voucher_picker_stories_story",
+      "components_voucher_picker_voucherpickerprops",
+      "lib_description_parser",
+      "lib_description_parser_color_classes",
+      "lib_description_parser_colorclass",
+      "lib_description_parser_descriptionprops",
+      "lib_description_parser_descriptiontext",
+      "lib_description_parser_flattenconfig",
+      "lib_description_parser_parsedsegment",
+      "lib_description_parser_parseline",
+      "test_picker_page",
+      "test_picker_page_testpickerpage",
+      "test_picker_view",
+      "test_picker_view_props",
+      "test_picker_view_rarity_colors",
+      "test_picker_view_rarity_labels",
+      "test_picker_view_testpickerview"
+    ],
+    "1": [
+      "docs_dev_environment_dev_environment",
+      "docs_dev_environment_dev_supabase",
+      "docs_dev_environment_production_supabase",
+      "docs_guest_user_access_claimguestcontent",
+      "docs_guest_user_access_createguestsession",
+      "docs_guest_user_access_guest_id_column",
+      "docs_guest_user_access_guest_user_access",
+      "mod_agents_api_lua",
+      "mod_agents_challenge_add_toml",
+      "mod_agents_main_lua",
+      "mod_agents_smods_challenges",
+      "mod_agents_ui_lua",
+      "plan_bun_runtime",
+      "plan_challenge_hub",
+      "plan_challenge_loader_codebase",
+      "plan_challenge_schema_zod",
+      "plan_discord_oauth",
+      "plan_docker_setup",
+      "plan_hand_rolled_jwt_actual",
+      "plan_in_game_mod",
+      "plan_lib_code_generator",
+      "plan_luasocket_http_client",
+      "plan_mod_no_auth",
+      "plan_next_js_api_routes",
+      "plan_nginx_reverse_proxy",
+      "plan_plain_http_mod_api",
+      "plan_postgresql_database",
+      "plan_single_content_table",
+      "plan_web_app",
+      "progress_challenge_loader_lua_mod",
+      "progress_phase_1_vps_database",
+      "progress_phase_2_nextjs_auth",
+      "progress_phase_3_api_routes",
+      "progress_phase_4_builder_page",
+      "progress_phase_5_hub_detail",
+      "progress_phase_6_mod_api_client",
+      "progress_phase_7_mod_ui_integration",
+      "progress_phase_8_polish_deploy",
+      "progress_storybook",
+      "web_agents_nextjs_rules",
+      "web_claude_nextjs_breaking_changes",
+      "workflows_build_mod_build_mod_workflow",
+      "workflows_deploy_deploy_workflow"
+    ],
+    "2": [
+      "callback_route",
+      "callback_route_baseurl",
+      "callback_route_callbackurl",
+      "callback_route_get",
+      "guest_route",
+      "guest_route_post",
+      "lib_auth",
+      "lib_auth_claimguestcontent",
+      "lib_auth_createguestsession",
+      "lib_auth_createsession",
+      "lib_auth_destroysession",
+      "lib_auth_getsession",
+      "lib_auth_secret",
+      "lib_auth_session",
+      "lib_auth_setsessioncookie",
+      "lib_db",
+      "lib_db_db",
+      "lib_db_pool",
+      "logout_route",
+      "logout_route_baseurl",
+      "logout_route_get",
+      "main_layout",
+      "main_layout_mainlayout",
+      "me_route",
+      "me_route_get",
+      "my_challenges_page",
+      "my_challenges_page_mychallengespage",
+      "play_route",
+      "play_route_post",
+      "ratings_route",
+      "ratings_route_post",
+      "ratings_route_ratingschema",
+      "result_route",
+      "result_route_post"
+    ],
+    "3": [
+      "code_route",
+      "code_route_delete",
+      "code_route_get",
+      "code_route_put",
+      "content_route",
+      "content_route_createschema",
+      "content_route_get",
+      "content_route_post",
+      "lib_auth_requireauth",
+      "lib_code",
+      "lib_code_generatecode",
+      "lib_schemas",
+      "lib_schemas_banneditemschema",
+      "lib_schemas_challengejson",
+      "lib_schemas_challengejsonschema",
+      "lib_schemas_consumableschema",
+      "lib_schemas_deckcardschema",
+      "lib_schemas_deckschema",
+      "lib_schemas_editionschema",
+      "lib_schemas_haschallengecontent",
+      "lib_schemas_jokerschema",
+      "lib_schemas_modifierschema",
+      "lib_schemas_voucherschema",
+      "publish_route",
+      "publish_route_delete",
+      "publish_route_post"
+    ],
+    "4": [
+      "web_package_devdependencies",
+      "web_package_devdependencies_chromatic_com_storybook",
+      "web_package_devdependencies_eslint",
+      "web_package_devdependencies_eslint_config_next",
+      "web_package_devdependencies_eslint_plugin_storybook",
+      "web_package_devdependencies_mockdate",
+      "web_package_devdependencies_msw",
+      "web_package_devdependencies_msw_storybook_addon",
+      "web_package_devdependencies_playwright",
+      "web_package_devdependencies_storybook",
+      "web_package_devdependencies_storybook_addon_a11y",
+      "web_package_devdependencies_storybook_addon_docs",
+      "web_package_devdependencies_storybook_addon_mcp",
+      "web_package_devdependencies_storybook_addon_vitest",
+      "web_package_devdependencies_storybook_nextjs_vite",
+      "web_package_devdependencies_tailwindcss",
+      "web_package_devdependencies_tailwindcss_postcss",
+      "web_package_devdependencies_types_node",
+      "web_package_devdependencies_types_pg",
+      "web_package_devdependencies_types_react",
+      "web_package_devdependencies_types_react_dom",
+      "web_package_devdependencies_typescript",
+      "web_package_devdependencies_vite",
+      "web_package_devdependencies_vitest",
+      "web_package_devdependencies_vitest_browser_playwright",
+      "web_package_devdependencies_vitest_coverage_v8"
+    ],
+    "5": [
+      "code_page",
+      "code_page_challengedetailpage",
+      "code_page_challengerow",
+      "code_page_emptysection",
+      "code_page_gameitem",
+      "code_page_itementry",
+      "code_page_itemlist",
+      "code_page_loadlookup",
+      "code_page_section",
+      "code_page_sectionheader",
+      "code_page_spriteconfig",
+      "code_page_sprites",
+      "code_page_statbadge",
+      "code_page_statusbadge",
+      "components_code_display",
+      "components_code_display_button_size",
+      "components_code_display_code_color",
+      "components_code_display_codedisplay",
+      "components_code_display_codedisplayprops",
+      "components_code_display_codesize",
+      "components_code_display_codevariant",
+      "components_code_display_size_classes",
+      "components_sprite_icon",
+      "components_sprite_icon_spriteicon",
+      "components_sprite_icon_spriteiconprops"
+    ],
+    "6": [
+      "web_package",
+      "web_package_dependencies",
+      "web_package_dependencies_jose",
+      "web_package_dependencies_next",
+      "web_package_dependencies_pg",
+      "web_package_dependencies_react",
+      "web_package_dependencies_react_dom",
+      "web_package_dependencies_supabase_ssr",
+      "web_package_dependencies_supabase_supabase_js",
+      "web_package_dependencies_zod",
+      "web_package_ignorescripts",
+      "web_package_msw",
+      "web_package_msw_workerdirectory",
+      "web_package_name",
+      "web_package_private",
+      "web_package_scripts",
+      "web_package_scripts_build",
+      "web_package_scripts_build_storybook",
+      "web_package_scripts_dev",
+      "web_package_scripts_lint",
+      "web_package_scripts_start",
+      "web_package_scripts_storybook",
+      "web_package_trusteddependencies",
+      "web_package_version"
+    ],
+    "7": [
+      "components_deck_editor",
+      "components_deck_editor_buildstandarddeck",
+      "components_deck_editor_cardinstance",
+      "components_deck_editor_deckcard",
+      "components_deck_editor_deckeditor",
+      "components_deck_editor_deckeditorprops",
+      "components_deck_editor_editions",
+      "components_deck_editor_enhancements",
+      "components_deck_editor_key",
+      "components_deck_editor_optionbtn",
+      "components_deck_editor_plaininstance",
+      "components_deck_editor_ranks",
+      "components_deck_editor_seals",
+      "components_deck_editor_stories",
+      "components_deck_editor_stories_default",
+      "components_deck_editor_stories_duplicates",
+      "components_deck_editor_stories_someremoved",
+      "components_deck_editor_stories_story",
+      "components_deck_editor_suit_colors",
+      "components_deck_editor_suit_symbols",
+      "components_deck_editor_suits"
+    ],
+    "8": [
+      "web_tsconfig",
+      "web_tsconfig_compileroptions",
+      "web_tsconfig_compileroptions_allowjs",
+      "web_tsconfig_compileroptions_esmoduleinterop",
+      "web_tsconfig_compileroptions_incremental",
+      "web_tsconfig_compileroptions_isolatedmodules",
+      "web_tsconfig_compileroptions_jsx",
+      "web_tsconfig_compileroptions_lib",
+      "web_tsconfig_compileroptions_module",
+      "web_tsconfig_compileroptions_moduleresolution",
+      "web_tsconfig_compileroptions_noemit",
+      "web_tsconfig_compileroptions_paths",
+      "web_tsconfig_compileroptions_plugins",
+      "web_tsconfig_compileroptions_resolvejsonmodule",
+      "web_tsconfig_compileroptions_skiplibcheck",
+      "web_tsconfig_compileroptions_strict",
+      "web_tsconfig_compileroptions_target",
+      "web_tsconfig_exclude",
+      "web_tsconfig_include",
+      "web_tsconfig_paths"
+    ],
+    "9": [
+      "_code_page",
+      "build_view",
+      "components_voucher_picker_voucherpicker",
+      "plan_visual_challenge_builder",
+      "progress_consumablepicker",
+      "progress_deckeditor",
+      "progress_descriptiontext",
+      "progress_extract_game_data_script",
+      "progress_itempicker",
+      "progress_jokerpicker",
+      "progress_selecteditemcard",
+      "progress_voucherpicker",
+      "sprites_blindchips",
+      "sprites_jokers",
+      "sprites_tarots",
+      "sprites_vouchers"
+    ],
+    "10": [
+      "components_explore_client",
+      "components_explore_client_challengecard",
+      "components_explore_client_challengerow",
+      "components_explore_client_exploreclient",
+      "components_explore_client_fetchlist",
+      "components_explore_client_section",
+      "components_explore_client_sortkey",
+      "main_page",
+      "main_page_challengerow",
+      "main_page_explorepage",
+      "main_page_fetchchallenges",
+      "supabase_client",
+      "supabase_client_createclient"
+    ],
+    "11": [
+      "src_api",
+      "src_api_hubapi_get_by_code",
+      "src_api_hubapi_increment_plays",
+      "src_api_hubapi_request",
+      "src_api_hubapi_test_connection",
+      "src_api_load_config",
+      "src_ui",
+      "src_ui_g_funcs_challenge_hub_add_back",
+      "src_ui_g_funcs_challenge_hub_add_open",
+      "src_ui_g_funcs_challenge_hub_add_play",
+      "src_ui_g_funcs_challenge_hub_paste",
+      "src_ui_g_uidef_challenge_hub_add_overlay"
+    ],
+    "12": [
+      "mod_mod",
+      "mod_mod_author",
+      "mod_mod_dependencies",
+      "mod_mod_description",
+      "mod_mod_id",
+      "mod_mod_main_file",
+      "mod_mod_name",
+      "mod_mod_prefix",
+      "mod_mod_version"
+    ],
+    "13": [
+      "public_mockserviceworker",
+      "public_mockserviceworker_activeclientids",
+      "public_mockserviceworker_getresponse",
+      "public_mockserviceworker_handlerequest",
+      "public_mockserviceworker_is_mocked_response",
+      "public_mockserviceworker_resolvemainclient",
+      "public_mockserviceworker_respondwithmock",
+      "public_mockserviceworker_sendtoclient",
+      "public_mockserviceworker_serializerequest"
+    ],
+    "14": [
+      "components_guest_actions",
+      "components_guest_actions_guestactions",
+      "components_nav",
+      "components_nav_nav",
+      "components_nav_nav_links",
+      "components_nav_navlinkclasses",
+      "components_nav_navprops"
+    ],
+    "15": [
+      "app_layout",
+      "app_layout_geistmono",
+      "app_layout_geistsans",
+      "app_layout_metadata",
+      "app_layout_rootlayout"
+    ],
+    "16": [
+      "install_page",
+      "install_page_getplatform",
+      "install_page_installpage",
+      "install_page_platform_paths",
+      "install_page_step"
+    ],
+    "17": [
+      "supabase_middleware",
+      "supabase_middleware_createclient",
+      "web_middleware",
+      "web_middleware_config",
+      "web_middleware_middleware"
+    ],
+    "18": [
+      "api_auth_callback_test",
+      "api_auth_callback_test_mockcreatesession",
+      "api_auth_callback_test_mocknextreq",
+      "api_auth_callback_test_mockquery"
+    ],
+    "19": [
+      "api_content_list_test",
+      "api_content_list_test_mockquery",
+      "tests_helpers",
+      "tests_helpers_mockrequest"
+    ],
+    "20": [
+      "storybook_msw_handlers",
+      "storybook_msw_handlers_mswhandlers",
+      "storybook_preview",
+      "storybook_preview_preview"
+    ],
+    "21": [
+      "login_route",
+      "login_route_callbackurl",
+      "login_route_get"
+    ],
+    "22": [
+      "api_content_code_test",
+      "api_content_code_test_mockquery"
+    ],
+    "23": [
+      "api_content_publish_test",
+      "api_content_publish_test_mockquery"
+    ],
+    "24": [
+      "api_ratings_test",
+      "api_ratings_test_mockquery"
+    ],
+    "25": [
+      "debug_dns_route",
+      "debug_dns_route_get"
+    ],
+    "26": [
+      "download_mod_route",
+      "download_mod_route_get"
+    ],
+    "27": [
+      "health_route",
+      "health_route_get"
+    ],
+    "28": [
+      "login_page",
+      "login_page_loginpage"
+    ],
+    "29": [
+      "mod_main",
+      "mod_main_load_cached_challenges"
+    ],
+    "30": [
+      "scripts_build_mod",
+      "users_sanderbruggeman_balatro_my_mods_challenge_loader_codebase_scripts_build_mod_sh__entry"
+    ],
+    "31": [
+      "scripts_bump_mod_version",
+      "users_sanderbruggeman_balatro_my_mods_challenge_loader_codebase_scripts_bump_mod_version_sh__entry"
+    ],
+    "32": [
+      "scripts_fly_secrets_dev",
+      "users_sanderbruggeman_balatro_my_mods_challenge_loader_codebase_scripts_fly_secrets_dev_sh__entry"
+    ],
+    "33": [
+      "sprites_8bitdeck",
+      "sprites_8bitdeck_opt2"
+    ],
+    "34": [
+      "storybook_main",
+      "storybook_main_config"
+    ],
+    "35": [
+      "supabase_server",
+      "supabase_server_createclient"
+    ],
+    "36": [
+      "web_eslint_config",
+      "web_eslint_config_eslintconfig"
+    ],
+    "37": [
+      "web_next_config",
+      "web_next_config_nextconfig"
+    ],
+    "38": [
+      "web_postcss_config",
+      "web_postcss_config_config"
+    ],
+    "39": [
+      "public_file_file"
+    ],
+    "40": [
+      "public_globe_globe_icon"
+    ],
+    "41": [
+      "public_next_next_logo"
+    ],
+    "42": [
+      "public_vercel_vercel_logo"
+    ],
+    "43": [
+      "public_window_icon"
+    ],
+    "44": [
+      "web_next_env_d"
+    ],
+    "45": [
+      "web_readme_nextjs_boilerplate"
+    ],
+    "46": [
+      "web_vitest_config"
+    ],
+    "47": [
+      "web_vitest_shims_d"
+    ]
+  },
+  "cohesion": {
+    "0": 0.05731523378582202,
+    "1": 0.058693244739756366,
+    "2": 0.12834224598930483,
+    "3": 0.11692307692307692,
+    "4": 0.07692307692307693,
+    "5": 0.08333333333333333,
+    "6": 0.08333333333333333,
+    "7": 0.10952380952380952,
+    "8": 0.1,
+    "9": 0.15,
+    "10": 0.1794871794871795,
+    "11": 0.22727272727272727,
+    "12": 0.2222222222222222,
+    "13": 0.4166666666666667,
+    "14": 0.2857142857142857,
+    "15": 0.4,
+    "16": 0.5,
+    "17": 0.6,
+    "18": 0.5,
+    "19": 0.6666666666666666,
+    "20": 0.6666666666666666,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0,
+    "35": 1.0,
+    "36": 1.0,
+    "37": 1.0,
+    "38": 1.0,
+    "39": 1.0,
+    "40": 1.0,
+    "41": 1.0,
+    "42": 1.0,
+    "43": 1.0,
+    "44": 1.0,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 1.0
+  },
+  "gods": [
+    {
+      "id": "web_tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 16
+    },
+    {
+      "id": "lib_db_db",
+      "label": "db",
+      "degree": 15
+    },
+    {
+      "id": "plan_web_app",
+      "label": "Web App (Next.js + Bun)",
+      "degree": 15
+    },
+    {
+      "id": "components_item_picker_pickeritem",
+      "label": "PickerItem",
+      "degree": 13
+    },
+    {
+      "id": "lib_auth_getsession",
+      "label": "getSession()",
+      "degree": 12
+    },
+    {
+      "id": "lib_auth_requireauth",
+      "label": "requireAuth()",
+      "degree": 12
+    },
+    {
+      "id": "plan_in_game_mod",
+      "label": "In-Game Mod (Steamodded/Lua)",
+      "degree": 10
+    },
+    {
+      "id": "web_package_scripts",
+      "label": "scripts",
+      "degree": 7
+    },
+    {
+      "id": "callback_route_get",
+      "label": "GET()",
+      "degree": 6
+    },
+    {
+      "id": "components_item_picker_itempicker",
+      "label": "ItemPicker()",
+      "degree": 6
+    }
+  ],
+  "surprises": [
+    {
+      "source": "Development Supabase: balatro-challenge-hub-dev",
+      "target": "PostgreSQL Database",
+      "source_files": [
+        "docs/dev-environment.md",
+        "PLAN.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "Production Supabase: balatro-challenge-hub",
+      "target": "PostgreSQL Database",
+      "source_files": [
+        "docs/dev-environment.md",
+        "PLAN.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "Phase 4: Builder Page",
+      "target": "Visual Challenge Builder",
+      "source_files": [
+        "PROGRESS.md",
+        "PLAN.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "references",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; bridges separate communities; peripheral node `Phase 4: Builder Page` unexpectedly reaches hub `Visual Challenge Builder`"
+    },
+    {
+      "source": "mod/src/api.lua \u2014 HTTP Client",
+      "target": "luasocket HTTP Client (src/api.lua)",
+      "source_files": [
+        "mod/AGENTS.md",
+        "PLAN.md"
+      ],
+      "confidence": "INFERRED",
+      "relation": "semantically_similar_to",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories; semantically similar concepts with no structural link"
+    },
+    {
+      "source": "ConsumablePicker Component",
+      "target": "Tarots.png - Balatro Tarot/Consumable Cards Spritesheet (2x)",
+      "source_files": [
+        "PROGRESS.md",
+        "web/public/sprites/Tarots.png"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "shares_data_with",
+      "why": "crosses file types (doc \u2194 image); connects across different repos/directories; peripheral node `ConsumablePicker Component` unexpectedly reaches hub `Tarots.png - Balatro Tarot/Consumable Cards Spritesheet (2x)`"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}
