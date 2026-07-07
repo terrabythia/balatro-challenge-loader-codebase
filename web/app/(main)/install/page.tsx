@@ -29,7 +29,7 @@ export default function InstallPage() {
             Challenge Loader mod.
           </p>
           <a
-            href="/api/download-mod"
+            href="/challenge-loader-mod.zip"
             className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white/10 px-5 py-2.5 text-sm font-medium hover:bg-white/20 transition-colors"
           >
             <svg
@@ -106,6 +106,5 @@ function getPlatform(): keyof typeof PLATFORM_PATHS {
 
 const PLATFORM_PATHS = {
   Windows: "%appdata%\\Balatro\\Mods",
-  "macOS / Linux":
-    "~/Library/Application Support/Balatro/Mods",
+  "macOS / Linux": "~/Library/Application Support/Balatro/Mods",
 };

@@ -92,7 +92,13 @@ function loadLookup(filename: string): Map<string, GameItem> {
 
 // ---- Sub-components ----
 
-function StatBadge({ label, value }: { label: string; value: string | number }) {
+function StatBadge({
+  label,
+  value,
+}: {
+  label: string;
+  value: string | number;
+}) {
   return (
     <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
       <p className="text-xs text-white/30">{label}</p>
@@ -124,7 +130,13 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <section className="border-t border-white/5 pt-6">
       <SectionHeader>{title}</SectionHeader>
@@ -140,16 +152,14 @@ function EmptySection({ text }: { text: string }) {
 interface ItemEntry {
   name: string;
   detail?: string;
-  sprite?: SpriteConfig & { pos: { x: number; y: number }; displayWidth?: number; overlayPos?: { x: number; y: number } };
+  sprite?: SpriteConfig & {
+    pos: { x: number; y: number };
+    displayWidth?: number;
+    overlayPos?: { x: number; y: number };
+  };
 }
 
-function ItemList({
-  items,
-  empty,
-}: {
-  items: ItemEntry[];
-  empty: string;
-}) {
+function ItemList({ items, empty }: { items: ItemEntry[]; empty: string }) {
   if (items.length === 0) {
     return <EmptySection text={empty} />;
   }
@@ -173,7 +183,9 @@ function ItemList({
           <span>
             {item.name}
             {item.detail && (
-              <span className="ml-1.5 text-xs text-white/30">{item.detail}</span>
+              <span className="ml-1.5 text-xs text-white/30">
+                {item.detail}
+              </span>
             )}
           </span>
         </li>
@@ -235,19 +247,24 @@ export default async function ChallengeDetailPage({
   // ---- Parse json_data into display sections ----
 
   // Starting jokers
-  const startJokers: ItemEntry[] = ((jsonData.jokers as Array<{ id: string; edition?: string; eternal?: boolean }>) || []).map(
-    (j) => {
-      const item = jokers.get(j.id);
-      const parts: string[] = [];
-      if (j.edition) parts.push(j.edition.charAt(0).toUpperCase() + j.edition.slice(1));
-      if (j.eternal) parts.push("Eternal");
-      return {
-        name: item?.name ?? j.id,
-        detail: parts.length > 0 ? `(${parts.join(", ")})` : undefined,
-        sprite: spriteFor(item, SPRITES.joker),
-      };
-    },
-  );
+  const startJokers: ItemEntry[] = (
+    (jsonData.jokers as Array<{
+      id: string;
+      edition?: string;
+      eternal?: boolean;
+    }>) || []
+  ).map((j) => {
+    const item = jokers.get(j.id);
+    const parts: string[] = [];
+    if (j.edition)
+      parts.push(j.edition.charAt(0).toUpperCase() + j.edition.slice(1));
+    if (j.eternal) parts.push("Eternal");
+    return {
+      name: item?.name ?? j.id,
+      detail: parts.length > 0 ? `(${parts.join(", ")})` : undefined,
+      sprite: spriteFor(item, SPRITES.joker),
+    };
+  });
 
   // Starting consumables
   const startConsumables: ItemEntry[] = (
@@ -272,15 +289,17 @@ export default async function ChallengeDetailPage({
   });
 
   // Rules / modifiers (dollars, hands, discards, hand_size)
-  const modifiers = (jsonData.rules as { modifiers?: Array<{ id: string; value: number | string | boolean }> } | undefined)
-    ?.modifiers || [];
+  const modifiers =
+    (
+      jsonData.rules as
+        | {
+            modifiers?: Array<{ id: string; value: number | string | boolean }>;
+          }
+        | undefined
+    )?.modifiers || [];
 
-  const dollars = Number(
-    modifiers.find((m) => m.id === "dollars")?.value ?? 4,
-  );
-  const hands = Number(
-    modifiers.find((m) => m.id === "hands")?.value ?? 4,
-  );
+  const dollars = Number(modifiers.find((m) => m.id === "dollars")?.value ?? 4);
+  const hands = Number(modifiers.find((m) => m.id === "hands")?.value ?? 4);
   const discards = Number(
     modifiers.find((m) => m.id === "discards")?.value ?? 3,
   );
@@ -376,7 +395,9 @@ export default async function ChallengeDetailPage({
       const extraStr = extras.length > 0 ? ` (${extras.join(", ")})` : "";
       return `${rank} of ${suit}${extraStr}`;
     });
-    deckDetail.push(`${cardDescs.length} card${cardDescs.length !== 1 ? "s" : ""}: ${cardDescs.join(", ")}`);
+    deckDetail.push(
+      `${cardDescs.length} card${cardDescs.length !== 1 ? "s" : ""}: ${cardDescs.join(", ")}`,
+    );
     deckSummary = "Custom deck";
   }
   if (deckDetail.length > 0) {
@@ -413,7 +434,9 @@ export default async function ChallengeDetailPage({
       };
     });
 
-  const bannedConsumablesFromCards: ItemEntry[] = (restrictions?.banned_cards || [])
+  const bannedConsumablesFromCards: ItemEntry[] = (
+    restrictions?.banned_cards || []
+  )
     .filter((b) => b.id.startsWith("c_") || b.id.startsWith("p_"))
     .map((b) => {
       const item = consumables.get(b.id);
@@ -423,7 +446,9 @@ export default async function ChallengeDetailPage({
       };
     });
 
-  const bannedVouchersFromCards: ItemEntry[] = (restrictions?.banned_cards || [])
+  const bannedVouchersFromCards: ItemEntry[] = (
+    restrictions?.banned_cards || []
+  )
     .filter((b) => b.id.startsWith("v_"))
     .map((b) => {
       const item = vouchers.get(b.id);
@@ -521,10 +546,7 @@ export default async function ChallengeDetailPage({
 
         {/* Starting consumables */}
         <Section title="Starting Consumables">
-          <ItemList
-            items={startConsumables}
-            empty="No starting consumables."
-          />
+          <ItemList items={startConsumables} empty="No starting consumables." />
         </Section>
 
         {/* Starting vouchers */}
@@ -564,7 +586,7 @@ export default async function ChallengeDetailPage({
       <div className="mt-10 flex items-center gap-3">
         {challenge.status === "published" && (
           <a
-            href={`/api/download-mod?code=${challenge.code}`}
+            href="/challenge-loader-mod.zip"
             className="rounded-lg bg-white/10 px-5 py-2.5 text-sm font-medium hover:bg-white/20 transition-colors"
           >
             Download Mod
