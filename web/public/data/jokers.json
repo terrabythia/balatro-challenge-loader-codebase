@@ -3358,7 +3358,7 @@
     }
   },
   {
-    "id": "j_caino",
+    "id": "j_canio",
     "order": 146,
     "unlocked": false,
     "discovered": false,
@@ -3367,7 +3367,7 @@
     "eternal_compat": true,
     "rarity": 4,
     "cost": 20,
-    "name": "Caino",
+    "name": "Canio",
     "pos": {
       "x": 3,
       "y": 8

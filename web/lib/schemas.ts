@@ -72,6 +72,43 @@ export const challengeJsonSchema = z.object({
 
 export type ChallengeJson = z.infer<typeof challengeJsonSchema>;
 
+// ---- Publish validation ----
+
+const MAX_BANNED_BLINDS = 20; // 28 boss blinds total, minimum 8 must stay enabled
+
+export const publishValidationSchema = z.object({
+  description: z
+    .string()
+    .min(1, "Description is required before publishing."),
+  bannedBlindCount: z
+    .number()
+    .int()
+    .max(
+      MAX_BANNED_BLINDS,
+      `At least 8 boss blinds must be enabled (maximum ${MAX_BANNED_BLINDS} banned of 28).`,
+    ),
+  deckCardCount: z
+    .number()
+    .int()
+    .min(1, "The deck must have at least 1 card. Add cards in the Deck step."),
+});
+
+export type PublishValidationInput = z.infer<typeof publishValidationSchema>;
+
+/**
+ * Server-only: validate that a challenge title is unique among the user's challenges.
+ * Pass `name` and the list of `existingNames` for this user (excluding the current challenge).
+ */
+export const uniqueTitleSchema = z
+  .object({
+    name: z.string().min(1),
+    existingNames: z.array(z.string()),
+  })
+  .refine((data) => !data.existingNames.includes(data.name), {
+    message: "You already have a challenge with this name. Choose a unique title.",
+    path: ["name"],
+  });
+
 // Returns true if the challenge has meaningful content beyond defaults
 export function hasChallengeContent(data: ChallengeJson): boolean {
   if (data.jokers && data.jokers.length > 0) return true;

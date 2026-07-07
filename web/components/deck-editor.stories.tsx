@@ -40,3 +40,51 @@ export const Duplicates: Story = {
     }),
   },
 };
+
+export const AllGlass: Story = {
+  args: {
+    cards: buildStandardDeck().map((c) => ({
+      ...c,
+      instances: c.instances.map((inst) => ({
+        ...inst,
+        enhancement: "m_glass",
+      })),
+    })),
+  },
+};
+
+export const AllStone: Story = {
+  args: {
+    cards: buildStandardDeck().map((c) => ({
+      ...c,
+      instances: c.instances.map((inst) => ({
+        ...inst,
+        enhancement: "m_stone",
+      })),
+    })),
+  },
+};
+
+export const AllSteel: Story = {
+  args: {
+    cards: buildStandardDeck().map((c) => ({
+      ...c,
+      instances: c.instances.map((inst) => ({
+        ...inst,
+        enhancement: "m_steel",
+      })),
+    })),
+  },
+};
+
+export const AllGold: Story = {
+  args: {
+    cards: buildStandardDeck().map((c) => ({
+      ...c,
+      instances: c.instances.map((inst) => ({
+        ...inst,
+        enhancement: "m_gold",
+      })),
+    })),
+  },
+};

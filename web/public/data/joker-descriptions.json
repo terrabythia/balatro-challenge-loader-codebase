@@ -93,12 +93,6 @@
     "a #1# in #2# chance to",
     "give $2 when scored"
   ],
-  "j_caino": [
-    "This Joker gains  X#1#  Mult",
-    "when a face card",
-    "is destroyed",
-    "(Currently  X#2#  Mult)"
-  ],
   "j_campfire": [
     "This Joker gains X#1# Mult"
   ],
@@ -757,5 +751,11 @@
     "+#1# Mult if played",
     "hand contains",
     "a #2#"
+  ],
+  "j_canio": [
+    "This Joker gains  X#1#  Mult",
+    "when a face card",
+    "is destroyed",
+    "(Currently  X#2#  Mult)"
   ]
 }

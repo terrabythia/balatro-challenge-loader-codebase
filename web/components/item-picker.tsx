@@ -7,12 +7,16 @@ export interface PickerItem {
   id: string;
   name: string;
   pos: { x: number; y: number };
+  /** Overlay sprite position for legendary/soul jokers (same sprite sheet) */
+  soul_pos?: { x: number; y: number };
   [key: string]: unknown;
 }
 
 interface ItemPickerProps {
   items: PickerItem[];
   spriteUrl: string;
+  /** Overlay sprite sheet URL (for legendary/soul jokers). Falls back to spriteUrl. */
+  overlaySpriteUrl?: string;
   spriteWidth: number;
   spriteHeight: number;
   cellWidth: number;
@@ -32,6 +36,7 @@ interface TooltipState {
 export default function ItemPicker({
   items,
   spriteUrl,
+  overlaySpriteUrl,
   spriteWidth,
   spriteHeight,
   cellWidth,
@@ -41,13 +46,14 @@ export default function ItemPicker({
   renderTooltip,
   getTitle,
 }: ItemPickerProps) {
+  const overlaySrc = overlaySpriteUrl ?? spriteUrl;
   const [search, setSearch] = useState("");
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const filtered = search
     ? items.filter((item) =>
-        item.name.toLowerCase().includes(search.toLowerCase())
+        item.name.toLowerCase().includes(search.toLowerCase()),
       )
     : items;
 
@@ -61,7 +67,7 @@ export default function ItemPicker({
         y: rect.top,
       });
     },
-    [renderTooltip]
+    [renderTooltip],
   );
 
   const hideTooltip = useCallback(() => setTooltip(null), []);
@@ -90,18 +96,35 @@ export default function ItemPicker({
             className="relative flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
           >
             <div
-              className="rounded-md shrink-0"
+              className="rounded-md shrink-0 relative"
               style={{
                 width: cellWidth,
                 height: cellHeight,
-                backgroundImage: `url(${spriteUrl})`,
-                backgroundSize: `${spriteWidth}px ${spriteHeight}px`,
-                backgroundPosition: `-${item.pos.x * cellWidth}px -${item.pos.y * cellHeight}px`,
-                imageRendering: "pixelated",
               }}
-              aria-label={item.name}
-              role="img"
-            />
+            >
+              <div
+                className="absolute inset-0 rounded-md"
+                style={{
+                  backgroundImage: `url(${spriteUrl})`,
+                  backgroundSize: `${spriteWidth}px ${spriteHeight}px`,
+                  backgroundPosition: `-${item.pos.x * cellWidth}px -${item.pos.y * cellHeight}px`,
+                  imageRendering: "pixelated",
+                }}
+                aria-label={item.name}
+                role="img"
+              />
+              {item.soul_pos && (
+                <div
+                  className="absolute inset-0 rounded-md"
+                  style={{
+                    backgroundImage: `url(${overlaySrc})`,
+                    backgroundSize: `${spriteWidth}px ${spriteHeight}px`,
+                    backgroundPosition: `-${item.soul_pos.x * cellWidth}px -${item.soul_pos.y * cellHeight}px`,
+                    imageRendering: "pixelated",
+                  }}
+                />
+              )}
+            </div>
             <span className="text-xs text-white/60 text-center leading-tight truncate w-full">
               {item.name}
             </span>
@@ -128,7 +151,7 @@ export default function ItemPicker({
           >
             {renderTooltip(tooltip.item)}
           </div>,
-          document.body
+          document.body,
         )}
     </div>
   );

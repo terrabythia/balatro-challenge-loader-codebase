@@ -23,8 +23,15 @@ COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 
-# Mod files for the download API
+# Mod files — build zip once at image build time, serve as static asset
 COPY mod/ ./mod/
+RUN apt-get update && apt-get install -y --no-install-recommends zip && \
+    cd mod && \
+    cp config.production.json config.json && \
+    zip -r /app/public/challenge-loader-mod.zip . \
+      -x "*.DS_Store" "AGENTS.md" "config.production.json" "hub_challenges/*" && \
+    apt-get remove -y zip && apt-get autoremove -y && \
+    rm -rf /var/lib/apt/lists/*
 
 EXPOSE 3000
 CMD ["bun", "server.js"]
