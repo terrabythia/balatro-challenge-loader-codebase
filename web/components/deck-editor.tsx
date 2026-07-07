@@ -99,6 +99,91 @@ function buildStandardDeck(): DeckCard[] {
   return cards;
 }
 
+// ---- Deck presets ----
+
+const FACE_RANKS = new Set(["J", "Q", "K"]);
+
+function abandonedDeck(): DeckCard[] {
+  const cards: DeckCard[] = [];
+  for (let si = 0; si < SUITS.length; si++) {
+    for (let ri = 0; ri < RANKS.length; ri++) {
+      if (FACE_RANKS.has(RANKS[ri])) {
+        cards.push({
+          suit: SUITS[si],
+          rank: RANKS[ri],
+          suitIndex: si,
+          rankIndex: ri,
+          count: 0,
+          instances: [],
+        });
+      } else {
+        cards.push({
+          suit: SUITS[si],
+          rank: RANKS[ri],
+          suitIndex: si,
+          rankIndex: ri,
+          count: 1,
+          instances: [plainInstance()],
+        });
+      }
+    }
+  }
+  return cards;
+}
+
+function checkeredDeck(): DeckCard[] {
+  const includedSuits = new Set(["Hearts", "Spades"]);
+  const cards: DeckCard[] = [];
+  for (let si = 0; si < SUITS.length; si++) {
+    for (let ri = 0; ri < RANKS.length; ri++) {
+      cards.push({
+        suit: SUITS[si],
+        rank: RANKS[ri],
+        suitIndex: si,
+        rankIndex: ri,
+        count: includedSuits.has(SUITS[si]) ? 1 : 0,
+        instances: includedSuits.has(SUITS[si]) ? [plainInstance()] : [],
+      });
+    }
+  }
+  return cards;
+}
+
+function facesOnlyDeck(): DeckCard[] {
+  const cards: DeckCard[] = [];
+  for (let si = 0; si < SUITS.length; si++) {
+    for (let ri = 0; ri < RANKS.length; ri++) {
+      cards.push({
+        suit: SUITS[si],
+        rank: RANKS[ri],
+        suitIndex: si,
+        rankIndex: ri,
+        count: FACE_RANKS.has(RANKS[ri]) ? 1 : 0,
+        instances: FACE_RANKS.has(RANKS[ri]) ? [plainInstance()] : [],
+      });
+    }
+  }
+  return cards;
+}
+
+function applyEnhancementToAll(
+  cards: DeckCard[],
+  enhancementId: string,
+): DeckCard[] {
+  return cards.map((c) => {
+    if (c.count === 0) {
+      return c;
+    }
+    return {
+      ...c,
+      instances: c.instances.map((inst) => ({
+        ...inst,
+        enhancement: enhancementId,
+      })),
+    };
+  });
+}
+
 function plainInstance(): CardInstance {
   return { enhancement: null, edition: null, seal: null };
 }
@@ -498,34 +583,94 @@ export default function DeckEditor({ cards, onChange }: DeckEditorProps) {
           );
         })()}
 
-      {/* Global controls */}
-      <div className="flex gap-2 pt-2 border-t border-white/5">
-        <button
-          onClick={() => {
-            const updated = cards.map((c) => ({
-              ...c,
-              count: 1,
-              instances: [plainInstance()],
-            }));
-            onChange(updated);
-          }}
-          className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs transition-colors"
-        >
-          Standard deck
-        </button>
-        <button
-          onClick={() => {
-            const updated = cards.map((c) => ({
-              ...c,
-              count: 0,
-              instances: [],
-            }));
-            onChange(updated);
-          }}
-          className="px-3 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-xs transition-colors"
-        >
-          Clear all
-        </button>
+      {/* Presets */}
+      <div className="space-y-2 pt-2 border-t border-white/5">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] text-white/20 uppercase tracking-wider shrink-0">
+            Decks
+          </span>
+          <button
+            onClick={() => {
+              const updated = cards.map((c) => ({
+                ...c,
+                count: 1,
+                instances: [plainInstance()],
+              }));
+              onChange(updated);
+            }}
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+          >
+            Standard
+          </button>
+          <button
+            onClick={() => onChange(abandonedDeck())}
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+          >
+            Abandoned
+          </button>
+          <button
+            onClick={() => onChange(checkeredDeck())}
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+          >
+            Checkered
+          </button>
+          <button
+            onClick={() => onChange(facesOnlyDeck())}
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+          >
+            Faces only
+          </button>
+          <button
+            onClick={() => {
+              const updated = cards.map((c) => ({
+                ...c,
+                count: 0,
+                instances: [],
+              }));
+              onChange(updated);
+            }}
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-red-500/20 text-[11px] text-red-400/80 transition-colors"
+          >
+            Clear all
+          </button>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] text-white/20 uppercase tracking-wider shrink-0">
+            Enhance
+          </span>
+          <button
+            onClick={() =>
+              onChange(applyEnhancementToAll(cards, "m_glass"))
+            }
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+          >
+            All glass
+          </button>
+          <button
+            onClick={() =>
+              onChange(applyEnhancementToAll(cards, "m_stone"))
+            }
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+          >
+            All stone
+          </button>
+          <button
+            onClick={() =>
+              onChange(applyEnhancementToAll(cards, "m_steel"))
+            }
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+          >
+            All steel
+          </button>
+          <button
+            onClick={() =>
+              onChange(applyEnhancementToAll(cards, "m_gold"))
+            }
+            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] transition-colors"
+          >
+            All gold
+          </button>
+        </div>
       </div>
     </div>
   );
