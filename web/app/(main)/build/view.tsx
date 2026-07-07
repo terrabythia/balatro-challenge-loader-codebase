@@ -14,6 +14,9 @@ import DeckEditor, {
   type DeckCard,
   type CardInstance,
 } from "@/components/deck-editor";
+import {
+  publishValidationSchema,
+} from "@/lib/schemas";
 
 // ---- Types ----
 
@@ -788,6 +791,22 @@ export default function BuildView({
   async function handlePublish() {
     if (!code) return;
     setError(null);
+
+    // Client-side publish validation
+    const parsed = publishValidationSchema.safeParse({
+      description: state.description || "",
+      bannedBlindCount: state.bannedBlinds.length,
+      deckCardCount: state.deckCards.reduce((sum, c) => sum + c.count, 0),
+    });
+    if (!parsed.success) {
+      setError(
+        parsed.error.issues
+          .map((i) => i.message)
+          .join(" "),
+      );
+      return;
+    }
+
     setPublishing(true);
     try {
       const payload =

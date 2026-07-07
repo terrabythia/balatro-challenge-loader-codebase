@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { requireAuth } from "@/lib/auth";
-import { challengeJsonSchema, hasChallengeContent } from "@/lib/schemas";
+import {
+  challengeJsonSchema,
+  hasChallengeContent,
+  publishValidationSchema,
+  uniqueTitleSchema,
+} from "@/lib/schemas";
 import { generateCode } from "@/lib/code";
 
 // POST /api/content/:code/publish
@@ -41,10 +46,15 @@ export async function POST(
 
   const currentStatus = existing.rows[0].status as string;
 
+  // Parse body (published updates carry updated name/description/json_data)
+  const body =
+    currentStatus === "published"
+      ? await req.json().catch(() => ({}))
+      : {};
+
   // For published challenges, accept updated json_data in the body
   let jsonData = existing.rows[0].json_data;
   if (currentStatus === "published") {
-    const body = await req.json().catch(() => ({}));
     if (body.json_data) {
       jsonData = {
         ...body.json_data,
@@ -86,6 +96,51 @@ export async function POST(
       },
       { status: 422 },
     );
+  }
+
+  // Server-side publish validation
+  const description =
+    (body.description as string) ?? (existing.rows[0].description as string) ?? "";
+  const deckCards = parsed.data.deck?.cards;
+  const deckCardCount = deckCards ? deckCards.length : 52;
+  const bannedOther = parsed.data.restrictions?.banned_other ?? [];
+  const bannedBlindCount = bannedOther.filter(
+    (b) => b.type === "blind",
+  ).length;
+
+  const parsedPublish = publishValidationSchema.safeParse({
+    description,
+    bannedBlindCount,
+    deckCardCount,
+  });
+  if (!parsedPublish.success) {
+    return NextResponse.json(
+      {
+        error: parsedPublish.error.issues.map((i) => i.message).join(" "),
+      },
+      { status: 422 },
+    );
+  }
+
+  // Title uniqueness check (server-only, uses DB)
+  const name = ((body.name || existing.rows[0].name) as string) || "";
+  if (name) {
+    const dup = await db.query(
+      `SELECT name FROM content WHERE author_id = $1 AND code != $2`,
+      [session.userId, code],
+    );
+    const titleParsed = uniqueTitleSchema.safeParse({
+      name,
+      existingNames: dup.rows.map((r) => r.name as string),
+    });
+    if (!titleParsed.success) {
+      return NextResponse.json(
+        {
+          error: titleParsed.error.issues.map((i) => i.message).join(" "),
+        },
+        { status: 422 },
+      );
+    }
   }
 
   if (currentStatus === "published") {
