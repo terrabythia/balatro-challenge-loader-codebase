@@ -14,6 +14,8 @@ interface SpriteIconProps {
   /** Override display width in pixels (crops with overflow-hidden).
    *  Useful for wide sprites like blind chips. */
   displayWidth?: number;
+  /** Overlay sprite position (for legendary/soul jokers). Same sheet, different cell. */
+  overlayPos?: { x: number; y: number };
 }
 
 /**
@@ -29,24 +31,45 @@ export default function SpriteIcon({
   cellHeight,
   displayHeight = 40,
   displayWidth,
+  overlayPos,
 }: SpriteIconProps) {
   const scale = displayHeight / cellHeight;
   const naturalWidth = Math.round(cellWidth * scale);
   const finalWidth = displayWidth ?? naturalWidth;
 
+  const bgSize = `${Math.round(sheetWidth * scale)}px ${Math.round(sheetHeight * scale)}px`;
+  const bgPos = `${Math.round(-pos.x * cellWidth * scale)}px ${Math.round(-pos.y * cellHeight * scale)}px`;
+
   return (
     <span
-      className="inline-block shrink-0 rounded overflow-hidden"
+      className="inline-block shrink-0 rounded overflow-hidden relative"
       style={{
         width: finalWidth,
         height: displayHeight,
-        backgroundImage: `url(${src})`,
-        backgroundSize: `${Math.round(sheetWidth * scale)}px ${Math.round(sheetHeight * scale)}px`,
-        backgroundPosition: `${Math.round(-pos.x * cellWidth * scale)}px ${Math.round(-pos.y * cellHeight * scale)}px`,
-        imageRendering: "pixelated",
       }}
       role="img"
       aria-hidden="true"
-    />
+    >
+      <span
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${src})`,
+          backgroundSize: bgSize,
+          backgroundPosition: bgPos,
+          imageRendering: "pixelated",
+        }}
+      />
+      {overlayPos && (
+        <span
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${src})`,
+            backgroundSize: bgSize,
+            backgroundPosition: `${Math.round(-overlayPos.x * cellWidth * scale)}px ${Math.round(-overlayPos.y * cellHeight * scale)}px`,
+            imageRendering: "pixelated",
+          }}
+        />
+      )}
+    </span>
   );
 }
