@@ -990,3 +990,7 @@ The mod connects to the VPS on port 3001 (plain HTTP, no TLS). Nginx proxies thi
 - [ ] **Banned tags** — allow banning skip tags (e.g., no Investment tags)
 - [ ] **Rules editor** — expose custom rules/modifiers as structured inputs (e.g., no rerolls, interest cap, etc.)
 - [ ] **Variable resolution in descriptions** — resolve #N# placeholders when displaying challenge JSON (currently shows raw placeholders like `#1# in #2# chance`)
+- [ ] **Daily Challenge** — a challenge that rotates every day, served from the hub and auto-loaded by the mod
+  - **Server**: `/api/daily` returns the daily challenge JSON. Rotation logic: select one published challenge each day (deterministic from date, or scheduled by admin). Track which challenges have been featured (avoid repeats within N days).
+  - **Mod**: On game launch, fetch `GET /api/daily` and cache the result. If already cached for today, skip the fetch. Add a "Daily Challenge" button to the Challenges tab that highlights when a new daily is available. Track daily challenge wins/losses on the server (separate from regular play stats).
+  - **UI**: Daily challenge detail card on the explore page, showing countdown to next rotation. Dedicated `/daily` page or section with leaderboard for today's challenge (fastest win, highest score). 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireAuth } from "@/lib/auth";
+import { requireAuthSafe } from "@/lib/api-helpers";
 
 // GET /api/content/:code — get single by code
 // The code itself is the authorization — codes are unguessable (21.9B
@@ -35,12 +35,8 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
-  let session;
-  try {
-    session = await requireAuth({ allowGuest: true });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const session = await requireAuthSafe({ allowGuest: true });
+  if (session instanceof NextResponse) return session;
 
   const { code } = await params;
   const body = await req.json();
@@ -106,12 +102,8 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ code: string }> }
 ) {
-  let session;
-  try {
-    session = await requireAuth({ allowGuest: true });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const session = await requireAuthSafe({ allowGuest: true });
+  if (session instanceof NextResponse) return session;
 
   const { code } = await params;
 

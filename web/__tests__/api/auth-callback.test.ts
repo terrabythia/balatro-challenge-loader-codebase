@@ -6,7 +6,7 @@ mock.module("@/lib/db", () => ({
 }));
 
 const mockCreateSession = mock(() => {});
-let authedUserId: string | null = null;
+const authedUserId: string | null = null;
 
 mock.module("@/lib/auth", () => ({
   getSession: mock(() => null),
@@ -14,6 +14,11 @@ mock.module("@/lib/auth", () => ({
     if (!authedUserId) throw new Error("Unauthorized");
     return { userId: authedUserId };
   }),
+  requireDiscordAuth: mock(() => {
+    if (!authedUserId) throw new Error("Unauthorized");
+    return { userId: authedUserId };
+  }),
+  claimGuestContent: mock(() => Promise.resolve(0)),
   createSession: mockCreateSession,
   destroySession: mock(() => {}),
 }));

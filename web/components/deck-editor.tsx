@@ -82,7 +82,13 @@ const SEALS = [
 
 // ---- Helpers ----
 
-function buildStandardDeck(): DeckCard[] {
+/** Shared deck-building loop — iterates all suits × ranks. */
+function buildFullDeck(
+  getEntry: (suit: string, rank: string, suitIndex: number, rankIndex: number) => {
+    count: number;
+    instances: CardInstance[];
+  },
+): DeckCard[] {
   const cards: DeckCard[] = [];
   for (let si = 0; si < SUITS.length; si++) {
     for (let ri = 0; ri < RANKS.length; ri++) {
@@ -91,12 +97,18 @@ function buildStandardDeck(): DeckCard[] {
         rank: RANKS[ri],
         suitIndex: si,
         rankIndex: ri,
-        count: 1,
-        instances: [plainInstance()],
+        ...getEntry(SUITS[si], RANKS[ri], si, ri),
       });
     }
   }
   return cards;
+}
+
+const oneWithInstance = { count: 1, instances: [plainInstance()] };
+const zeroEmpty = { count: 0, instances: [] };
+
+function buildStandardDeck(): DeckCard[] {
+  return buildFullDeck(() => oneWithInstance);
 }
 
 // ---- Deck presets ----
@@ -104,66 +116,22 @@ function buildStandardDeck(): DeckCard[] {
 const FACE_RANKS = new Set(["J", "Q", "K"]);
 
 function abandonedDeck(): DeckCard[] {
-  const cards: DeckCard[] = [];
-  for (let si = 0; si < SUITS.length; si++) {
-    for (let ri = 0; ri < RANKS.length; ri++) {
-      if (FACE_RANKS.has(RANKS[ri])) {
-        cards.push({
-          suit: SUITS[si],
-          rank: RANKS[ri],
-          suitIndex: si,
-          rankIndex: ri,
-          count: 0,
-          instances: [],
-        });
-      } else {
-        cards.push({
-          suit: SUITS[si],
-          rank: RANKS[ri],
-          suitIndex: si,
-          rankIndex: ri,
-          count: 1,
-          instances: [plainInstance()],
-        });
-      }
-    }
-  }
-  return cards;
+  return buildFullDeck((_, rank) =>
+    FACE_RANKS.has(rank) ? zeroEmpty : oneWithInstance,
+  );
 }
 
 function checkeredDeck(): DeckCard[] {
   const includedSuits = new Set(["Hearts", "Spades"]);
-  const cards: DeckCard[] = [];
-  for (let si = 0; si < SUITS.length; si++) {
-    for (let ri = 0; ri < RANKS.length; ri++) {
-      cards.push({
-        suit: SUITS[si],
-        rank: RANKS[ri],
-        suitIndex: si,
-        rankIndex: ri,
-        count: includedSuits.has(SUITS[si]) ? 1 : 0,
-        instances: includedSuits.has(SUITS[si]) ? [plainInstance()] : [],
-      });
-    }
-  }
-  return cards;
+  return buildFullDeck((suit) =>
+    includedSuits.has(suit) ? oneWithInstance : zeroEmpty,
+  );
 }
 
 function facesOnlyDeck(): DeckCard[] {
-  const cards: DeckCard[] = [];
-  for (let si = 0; si < SUITS.length; si++) {
-    for (let ri = 0; ri < RANKS.length; ri++) {
-      cards.push({
-        suit: SUITS[si],
-        rank: RANKS[ri],
-        suitIndex: si,
-        rankIndex: ri,
-        count: FACE_RANKS.has(RANKS[ri]) ? 1 : 0,
-        instances: FACE_RANKS.has(RANKS[ri]) ? [plainInstance()] : [],
-      });
-    }
-  }
-  return cards;
+  return buildFullDeck((_, rank) =>
+    FACE_RANKS.has(rank) ? oneWithInstance : zeroEmpty,
+  );
 }
 
 function applyEnhancementToAll(
@@ -326,7 +294,6 @@ export default function DeckEditor({ cards, onChange }: DeckEditorProps) {
                   )!;
                   const cardKey = key(suit, rank);
                   const hasCards = card.count > 0;
-                  const isExpanded = expanded?.si === si && expanded?.ri === ri;
 
                   return (
                     <div

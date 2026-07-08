@@ -9,16 +9,20 @@ export async function GET() {
       body: "grant_type=client_credentials",
     });
     results.push(`discord.com OK (status ${r.status})`);
-  } catch (e: any) {
-    results.push(`discord.com FAILED: ${e.code} ${e.message}`);
+  } catch (e: unknown) {
+    if (e instanceof Error) {
+      const err = e as NodeJS.ErrnoException;
+      results.push(`discord.com FAILED: ${err.code} ${err.message}`);
+    }
   }
 
   // Test 2: google
   try {
     const r = await fetch("https://google.com");
     results.push(`google.com OK (status ${r.status})`);
-  } catch (e: any) {
-    results.push(`google.com FAILED: ${e.code} ${e.message}`);
+  } catch (e: unknown) {
+    const err = e as NodeJS.ErrnoException;
+    results.push(`google.com FAILED: ${err.code} ${err.message}`);
   }
 
   return Response.json({ results });
