@@ -71,6 +71,8 @@ export const challengeJsonSchema = z.object({
 });
 
 export type ChallengeJson = z.infer<typeof challengeJsonSchema>;
+export type ChallengeJoker = ChallengeJson["jokers"][number];
+export type DeckCardEntry = NonNullable<ChallengeJson["deck"]>["cards"] extends (infer T)[] | undefined ? T : never;
 
 // ---- Publish validation ----
 

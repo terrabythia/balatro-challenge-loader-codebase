@@ -13,6 +13,11 @@ mock.module("@/lib/auth", () => ({
     if (!authedUserId) throw new Error("Unauthorized");
     return { userId: authedUserId };
   }),
+  requireDiscordAuth: mock((_guestError: string): { userId: string } => {
+    if (!authedUserId) throw new Error("Unauthorized");
+    return { userId: authedUserId };
+  }),
+  claimGuestContent: mock(() => Promise.resolve(0)),
   createSession: mock(() => {}),
   destroySession: mock(() => {}),
 }));
@@ -35,7 +40,15 @@ describe("POST /api/content/:code/publish", () => {
   test("publishes draft owned by user", async () => {
     authedUserId = "user123";
     mockQuery.mockReturnValueOnce({
-      rows: [{ code: "TEST-CD" }],
+      rows: [{
+        code: "TEST-CD",
+        author_id: "user123",
+        status: "draft",
+        json_data: { key: "test_key", name: "Test", jokers: [{ id: "j_joker" }] },
+        version: null,
+        name: "Test",
+        description: "A test challenge with at least one joker.",
+      }],
       rowCount: 1,
     });
 
@@ -45,6 +58,7 @@ describe("POST /api/content/:code/publish", () => {
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.code).toBe("TEST-CD");
+    expect(body.version).toBe(1);
   });
 
   test("returns 404 for non-existent draft", async () => {

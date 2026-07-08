@@ -1,22 +1,10 @@
 import { db } from "@/lib/db";
 import ExploreClient from "@/components/explore-client";
+import type { ChallengeRow } from "@/types";
 
 // Always render fresh — the three indexed aggregate queries hit Supabase,
 // not a local DB. Even at high traffic the server is just a thin proxy.
 export const revalidate = 0;
-
-interface ChallengeRow {
-  code: string;
-  name: string;
-  author: string;
-  description: string | null;
-  downloads: number;
-  plays: number;
-  wins: number;
-  losses: number;
-  avg_rating: number;
-  rating_count: number;
-}
 
 async function fetchChallenges(
   sort: "new" | "downloads" | "rating",

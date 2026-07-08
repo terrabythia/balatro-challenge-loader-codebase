@@ -13,19 +13,17 @@ interface ParsedSegment {
  * Flatten a config object into ordered values that correspond to #N# placeholders.
  * Balatro's convention: variables are extracted depth-first from the config.
  */
-function flattenConfig(config: unknown): (string | number)[] {
+export function flattenConfig(config: unknown): (string | number)[] {
   const result: (string | number)[] = [];
 
   function walk(val: unknown) {
-    if (val === null || val === undefined) return;
+    if (val == null) return;
     if (typeof val === "number" || typeof val === "string") {
       result.push(val);
     } else if (Array.isArray(val)) {
-      for (const item of val) walk(item);
+      val.forEach(walk);
     } else if (typeof val === "object") {
-      for (const v of Object.values(val as Record<string, unknown>)) {
-        walk(v);
-      }
+      Object.values(val as Record<string, unknown>).forEach(walk);
     }
   }
 
@@ -37,7 +35,7 @@ function flattenConfig(config: unknown): (string | number)[] {
  * Parse a single line of Balatro description text.
  * Returns array of segments: text spans and resolved variable values.
  */
-function parseLine(
+export function parseLine(
   line: string,
   configVars: (string | number)[]
 ): ParsedSegment[] {
@@ -46,8 +44,14 @@ function parseLine(
   let currentColor: string | undefined;
   let i = 0;
 
+  function flush() {
+    if (currentText) {
+      segments.push({ type: "text", value: currentText, color: currentColor });
+      currentText = "";
+    }
+  }
+
   while (i < line.length) {
-    // Handle {C:color} or {X:mult,C:color} tags
     if (line[i] === "{") {
       const close = line.indexOf("}", i);
       if (close === -1) {
@@ -58,47 +62,32 @@ function parseLine(
       const tag = line.slice(i + 1, close);
       i = close + 1;
 
-      // Closing tag {}
       if (tag === "") {
-        if (currentText) {
-          segments.push({ type: "text", value: currentText, color: currentColor });
-          currentText = "";
-        }
+        flush();
         currentColor = undefined;
         continue;
       }
 
-      // Extract color from {C:color} or {X:mult,C:color}
       const colorMatch = tag.match(/(?:^|,)C:(\w+)/);
       if (colorMatch) {
-        // Flush current text with old color
-        if (currentText) {
-          segments.push({ type: "text", value: currentText, color: currentColor });
-          currentText = "";
-        }
+        flush();
         currentColor = colorMatch[1];
       }
       continue;
     }
 
-    // Handle #N# placeholders
     if (line[i] === "#") {
       const match = line.slice(i).match(/^#(\d+)#/);
       if (match) {
-        // Flush any preceding text
-        if (currentText) {
-          segments.push({ type: "text", value: currentText, color: currentColor });
-          currentText = "";
-        }
+        flush();
 
-        const n = parseInt(match[1]) - 1; // 0-indexed
+        const n = parseInt(match[1]) - 1;
         const resolved = configVars[n];
-        if (resolved !== undefined) {
-          segments.push({ type: "var", value: String(resolved), color: currentColor });
-        } else {
-          // Keep as placeholder if not found
-          segments.push({ type: "var", value: `#${match[1]}#` });
-        }
+        segments.push({
+          type: "var",
+          value: resolved !== undefined ? String(resolved) : `#${match[1]}#`,
+          color: currentColor,
+        });
 
         i += match[0].length;
         continue;
@@ -109,10 +98,7 @@ function parseLine(
     i++;
   }
 
-  // Flush remaining text
-  if (currentText) {
-    segments.push({ type: "text", value: currentText, color: currentColor });
-  }
+  flush();
 
   return segments;
 }
@@ -160,23 +146,19 @@ export function DescriptionText({ lines, config }: DescriptionProps) {
         return (
           <span key={li}>
             {li > 0 && " "}
-            {segments.map((seg, si) => {
-              if (seg.type === "var") {
-                return (
-                  <span
-                    key={si}
-                    className={`font-semibold ${colorClass(seg.color)}`}
-                  >
-                    {seg.value}
-                  </span>
-                );
-              }
-              return (
-                <span key={si} className={colorClass(seg.color)}>
-                  {seg.value}
-                </span>
-              );
-            })}
+            {segments.map((seg, si) => (
+              <span
+                key={si}
+                className={[
+                  colorClass(seg.color),
+                  seg.type === "var" && "font-semibold",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
+              >
+                {seg.value}
+              </span>
+            ))}
           </span>
         );
       })}

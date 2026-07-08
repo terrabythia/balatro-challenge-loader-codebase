@@ -4,18 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/utils/supabase/client";
 
-interface ChallengeRow {
-  code: string;
-  name: string;
-  author: string;
-  description: string | null;
-  downloads: number;
-  plays: number;
-  wins: number;
-  losses: number;
-  avg_rating: number;
-  rating_count: number;
-}
+import type { ChallengeRow } from "@/types";
 
 type SortKey = "new" | "downloads" | "rating";
 

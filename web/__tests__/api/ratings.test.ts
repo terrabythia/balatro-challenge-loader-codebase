@@ -13,6 +13,11 @@ mock.module("@/lib/auth", () => ({
     if (!authedUserId) throw new Error("Unauthorized");
     return { userId: authedUserId };
   }),
+  requireDiscordAuth: mock((): { userId: string } => {
+    if (!authedUserId) throw new Error("Unauthorized");
+    return { userId: authedUserId };
+  }),
+  claimGuestContent: mock(() => Promise.resolve(0)),
   createSession: mock(() => {}),
   destroySession: mock(() => {}),
 }));

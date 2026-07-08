@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { requireAuth } from "@/lib/auth";
-import { generateCode } from "@/lib/code";
+import { requireAuthSafe, insertWithUniqueCode } from "@/lib/api-helpers";
 import { z } from "zod";
 
 // Validation — basic shape check, content is JSONB
@@ -59,12 +58,8 @@ export async function GET(req: NextRequest) {
 
 // POST /api/content — create draft (auth required)
 export async function POST(req: NextRequest) {
-  let session;
-  try {
-    session = await requireAuth({ allowGuest: true });
-  } catch {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const session = await requireAuthSafe({ allowGuest: true });
+  if (session instanceof NextResponse) return session;
 
   const body = await req.json();
   const parsed = createSchema.safeParse(body);
@@ -86,17 +81,14 @@ export async function POST(req: NextRequest) {
 
   // Generate a unique code with collision retry
   let code: string;
-  const maxRetries = 5;
-
-  for (let attempt = 0; attempt < maxRetries; attempt++) {
-    code = generateCode();
-    try {
+  try {
+    code = await insertWithUniqueCode(async (newCode) => {
       await db.query(
         `INSERT INTO content (type, code, author_id, guest_id, name, description, tags, json_data)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8::jsonb)`,
         [
           parsed.data.type,
-          code,
+          newCode,
           session.isGuest ? null : session.userId,
           session.isGuest ? session.userId : null,
           parsed.data.name,
@@ -105,22 +97,13 @@ export async function POST(req: NextRequest) {
           JSON.stringify(json_data),
         ],
       );
-      return NextResponse.json({ code }, { status: 201 });
-    } catch (err: unknown) {
-      // PostgreSQL unique-violation code = 23505
-      const isUniqueViolation =
-        typeof err === "object" &&
-        err !== null &&
-        "code" in err &&
-        (err as { code: string }).code === "23505";
-
-      if (!isUniqueViolation || attempt === maxRetries - 1) {
-        throw err;
-      }
-      // Collision — loop generates a new code
-    }
+    });
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to generate unique code" },
+      { status: 500 },
+    );
   }
 
-  // Unreachable (TypeScript needs it)
-  return NextResponse.json({ error: "Failed to generate unique code" }, { status: 500 });
+  return NextResponse.json({ code }, { status: 201 });
 }

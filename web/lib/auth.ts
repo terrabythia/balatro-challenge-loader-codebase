@@ -72,6 +72,20 @@ export async function requireAuth(
   return session;
 }
 
+/**
+ * Like requireAuth() but rejects guest sessions with a custom error message.
+ * Use for endpoints that require a Discord-authenticated user (publish, etc.).
+ */
+export async function requireDiscordAuth(
+  guestError: string,
+): Promise<Session> {
+  const session = await requireAuth();
+  if (session.isGuest) {
+    throw new Error(guestError);
+  }
+  return session;
+}
+
 export async function claimGuestContent(
   guestId: string,
   discordUserId: string,

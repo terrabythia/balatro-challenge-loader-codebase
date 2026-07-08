@@ -1,198 +1,25 @@
-import fs from "fs";
-import path from "path";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { db } from "@/lib/db";
 import CodeDisplay from "@/components/code-display";
-import SpriteIcon from "@/components/sprite-icon";
-
-// Types matching the content table + aggregated fields
-interface ChallengeRow {
-  id: number;
-  type: string;
-  code: string;
-  author_id: string | null;
-  guest_id: string | null;
-  name: string;
-  description: string | null;
-  tags: string[];
-  json_data: Record<string, unknown>;
-  sprite_url: string | null;
-  status: "draft" | "published";
-  downloads: number;
-  plays: number;
-  wins: number;
-  losses: number;
-  created_at: string;
-  updated_at: string;
-  author: string | null;
-  avg_rating: number;
-  rating_count: number;
-}
-
-// ---- Resolve IDs to friendly names using static game data ----
-
-interface GameItem {
-  id: string;
-  name: string;
-  set?: string;
-  effect?: string;
-  pos?: { x: number; y: number };
-  soul_pos?: { x: number; y: number };
-}
-
-interface SpriteConfig {
-  src: string;
-  sheetWidth: number;
-  sheetHeight: number;
-  cellWidth: number;
-  cellHeight: number;
-}
-
-const SPRITES: Record<string, SpriteConfig> = {
-  joker: {
-    src: "/sprites/Jokers.png",
-    sheetWidth: 710,
-    sheetHeight: 1520,
-    cellWidth: 71,
-    cellHeight: 95,
-  },
-  consumable: {
-    src: "/sprites/Tarots.png",
-    sheetWidth: 710,
-    sheetHeight: 570,
-    cellWidth: 71,
-    cellHeight: 95,
-  },
-  voucher: {
-    src: "/sprites/Vouchers.png",
-    sheetWidth: 639,
-    sheetHeight: 380,
-    cellWidth: 71,
-    cellHeight: 95,
-  },
-  blind: {
-    src: "/sprites/BlindChips.png",
-    sheetWidth: 1428,
-    sheetHeight: 2108,
-    cellWidth: 1428,
-    cellHeight: 68,
-  },
-};
-
-function loadLookup(filename: string): Map<string, GameItem> {
-  const items: GameItem[] = JSON.parse(
-    fs.readFileSync(
-      path.join(process.cwd(), "public", "data", filename),
-      "utf-8",
-    ),
-  );
-  return new Map(items.map((item) => [item.id, item]));
-}
-
-// ---- Sub-components ----
-
-function StatBadge({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | number;
-}) {
-  return (
-    <div className="rounded-lg border border-white/5 bg-white/[0.02] px-4 py-3">
-      <p className="text-xs text-white/30">{label}</p>
-      <p className="mt-0.5 text-sm font-medium">{value}</p>
-    </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const isPublished = status === "published";
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        isPublished
-          ? "bg-emerald-500/10 text-emerald-400"
-          : "bg-amber-500/10 text-amber-400"
-      }`}
-    >
-      {isPublished ? "Published" : "Draft"}
-    </span>
-  );
-}
-
-function SectionHeader({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-white/50">
-      {children}
-    </h2>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="border-t border-white/5 pt-6">
-      <SectionHeader>{title}</SectionHeader>
-      {children}
-    </section>
-  );
-}
-
-function EmptySection({ text }: { text: string }) {
-  return <p className="text-sm text-white/20">{text}</p>;
-}
-
-interface ItemEntry {
-  name: string;
-  detail?: string;
-  sprite?: SpriteConfig & {
-    pos: { x: number; y: number };
-    displayWidth?: number;
-    overlayPos?: { x: number; y: number };
-  };
-}
-
-function ItemList({ items, empty }: { items: ItemEntry[]; empty: string }) {
-  if (items.length === 0) {
-    return <EmptySection text={empty} />;
-  }
-  return (
-    <ul className="space-y-1.5">
-      {items.map((item, i) => (
-        <li key={i} className="flex items-center gap-2 text-sm text-white/70">
-          {item.sprite && (
-            <SpriteIcon
-              src={item.sprite.src}
-              pos={item.sprite.pos}
-              sheetWidth={item.sprite.sheetWidth}
-              sheetHeight={item.sprite.sheetHeight}
-              cellWidth={item.sprite.cellWidth}
-              cellHeight={item.sprite.cellHeight}
-              displayHeight={32}
-              displayWidth={item.sprite.displayWidth}
-              overlayPos={item.sprite.overlayPos}
-            />
-          )}
-          <span>
-            {item.name}
-            {item.detail && (
-              <span className="ml-1.5 text-xs text-white/30">
-                {item.detail}
-              </span>
-            )}
-          </span>
-        </li>
-      ))}
-    </ul>
-  );
-}
+import {
+  StatBadge,
+  StatusBadge,
+  Section,
+  ItemList,
+} from "@/components/challenge-detail";
+import {
+  SPRITES,
+  SUIT_SHORT_TO_FULL,
+  RANK_SHORT_TO_FULL,
+} from "@/lib/contstants";
+import type { ChallengeRow } from "@/types";
+import {
+  loadLookup,
+  spriteFor,
+  resolveItems,
+  type ItemEntry,
+} from "@/lib/game-data";
 
 // ---- Page component ----
 
@@ -230,63 +57,39 @@ export default async function ChallengeDetailPage({
   const blinds = loadLookup("blinds.json");
 
   // ---- Helper: build ItemEntry with sprite from lookup ----
-  function spriteFor(
-    item: GameItem | undefined,
-    spriteConfig: SpriteConfig,
-  ): ItemEntry["sprite"] {
-    if (item?.pos) {
-      return {
-        ...spriteConfig,
-        pos: item.pos,
-        overlayPos: item.soul_pos,
-      };
-    }
-    return undefined;
-  }
-
   // ---- Parse json_data into display sections ----
 
   // Starting jokers
-  const startJokers: ItemEntry[] = (
-    (jsonData.jokers as Array<{
+  const startJokers = resolveItems(
+    jsonData.jokers as Array<{
       id: string;
       edition?: string;
       eternal?: boolean;
-    }>) || []
-  ).map((j) => {
-    const item = jokers.get(j.id);
-    const parts: string[] = [];
-    if (j.edition)
-      parts.push(j.edition.charAt(0).toUpperCase() + j.edition.slice(1));
-    if (j.eternal) parts.push("Eternal");
-    return {
-      name: item?.name ?? j.id,
-      detail: parts.length > 0 ? `(${parts.join(", ")})` : undefined,
-      sprite: spriteFor(item, SPRITES.joker),
-    };
-  });
+    }>,
+    jokers,
+    SPRITES.joker,
+    (j) => {
+      const parts: string[] = [];
+      if (j.edition)
+        parts.push(j.edition.charAt(0).toUpperCase() + j.edition.slice(1));
+      if (j.eternal) parts.push("Eternal");
+      return parts.length > 0 ? `(${parts.join(", ")})` : undefined;
+    },
+  );
 
   // Starting consumables
-  const startConsumables: ItemEntry[] = (
-    (jsonData.consumeables as Array<{ id: string }>) || []
-  ).map((c) => {
-    const item = consumables.get(c.id);
-    return {
-      name: item?.name ?? c.id,
-      sprite: spriteFor(item, SPRITES.consumable),
-    };
-  });
+  const startConsumables = resolveItems(
+    jsonData.consumeables as Array<{ id: string }>,
+    consumables,
+    SPRITES.consumable,
+  );
 
   // Starting vouchers
-  const startVouchers: ItemEntry[] = (
-    (jsonData.vouchers as Array<{ id: string }>) || []
-  ).map((v) => {
-    const item = vouchers.get(v.id);
-    return {
-      name: item?.name ?? v.id,
-      sprite: spriteFor(item, SPRITES.voucher),
-    };
-  });
+  const startVouchers = resolveItems(
+    jsonData.vouchers as Array<{ id: string }>,
+    vouchers,
+    SPRITES.voucher,
+  );
 
   // Rules / modifiers (dollars, hands, discards, hand_size)
   const modifiers =
@@ -325,52 +128,30 @@ export default async function ChallengeDetailPage({
       }
     | undefined;
 
-  const suitNames: Record<string, string> = {
-    H: "Hearts",
-    C: "Clubs",
-    D: "Diamonds",
-    S: "Spades",
-  };
-  const rankNames: Record<string, string> = {
-    A: "A",
-    "2": "2",
-    "3": "3",
-    "4": "4",
-    "5": "5",
-    "6": "6",
-    "7": "7",
-    "8": "8",
-    "9": "9",
-    T: "10",
-    J: "J",
-    Q: "Q",
-    K: "K",
-  };
-
   let deckSummary = "Standard 52-card deck";
   const deckDetail: string[] = [];
 
   if (deck?.yes_suits) {
     const suits = Object.keys(deck.yes_suits)
-      .map((s) => suitNames[s] || s)
+      .map((s) => SUIT_SHORT_TO_FULL[s] || s)
       .join(", ");
     deckDetail.push(`Suits: ${suits}`);
   }
   if (deck?.no_suits) {
     const suits = Object.keys(deck.no_suits)
-      .map((s) => suitNames[s] || s)
+      .map((s) => SUIT_SHORT_TO_FULL[s] || s)
       .join(", ");
     deckDetail.push(`No suits: ${suits}`);
   }
   if (deck?.yes_ranks) {
     const ranks = Object.keys(deck.yes_ranks)
-      .map((r) => rankNames[r] || r)
+      .map((r) => RANK_SHORT_TO_FULL[r] || r)
       .join(", ");
     deckDetail.push(`Ranks: ${ranks}`);
   }
   if (deck?.no_ranks) {
     const ranks = Object.keys(deck.no_ranks)
-      .map((r) => rankNames[r] || r)
+      .map((r) => RANK_SHORT_TO_FULL[r] || r)
       .join(", ");
     deckDetail.push(`No ranks: ${ranks}`);
   }
@@ -386,8 +167,8 @@ export default async function ChallengeDetailPage({
       m_lucky: "Lucky",
     };
     const cardDescs = deck.cards.map((c) => {
-      const suit = suitNames[c.s] || c.s;
-      const rank = rankNames[c.r] || c.r;
+      const suit = SUIT_SHORT_TO_FULL[c.s] || c.s;
+      const rank = RANK_SHORT_TO_FULL[c.r] || c.r;
       const extras: string[] = [];
       if (c.e) extras.push(enhancementNames[c.e] || c.e);
       if (c.d) extras.push(c.d.charAt(0).toUpperCase() + c.d.slice(1));
