@@ -14,9 +14,21 @@ import DeckEditor, {
   type DeckCard,
   type CardInstance,
 } from "@/components/deck-editor";
-import { publishValidationSchema } from "@/lib/schemas";
+import { publishValidationSchema, type ChallengeJson, type ChallengeJoker, type DeckCardEntry } from "@/lib/schemas";
+import {
+  RANK_SHORT_CODE,
+  SUIT_SHORT_CODE,
+  SUIT_NAMES,
+  RANK_NAMES,
+  SUIT_SHORT_TO_FULL,
+  RANK_SHORT_TO_FULL,
+  BLIND_SPRITE,
+  JOKER_SPRITE,
+  CONSUMABLE_SPRITE,
+  VOUCHER_SPRITE,
+} from "@/lib/contstants";
 
-// ---- Types ----
+import type { SpriteConfig } from "@/types";
 
 interface BuilderData {
   jokers: PickerItem[];
@@ -29,32 +41,10 @@ interface BuilderData {
     name: string;
     description: string | null;
     status: string;
+    version: number | null;
     json_data: Record<string, unknown>;
   } | null;
   isGuest: boolean;
-}
-
-interface ChallengeJson {
-  key: string;
-  name: string;
-  jokers: { id: string; edition?: string; eternal?: boolean }[];
-  consumeables?: { id: string }[];
-  vouchers?: { id: string }[];
-  deck?: {
-    type: string;
-    yes_suits?: Record<string, true>;
-    no_suits?: Record<string, true>;
-    yes_ranks?: Record<string, true>;
-    no_ranks?: Record<string, true>;
-    cards?: { s: string; r: string }[];
-  };
-  restrictions?: {
-    banned_cards?: { id: string }[];
-    banned_other?: { id: string; type: string }[];
-  };
-  rules?: {
-    modifiers?: { id: string; value: number | string | boolean }[];
-  };
 }
 
 interface SelectedJoker {
@@ -98,186 +88,146 @@ function slugify(name: string): string {
   );
 }
 
-function buildChallengeJson(state: BuilderState): ChallengeJson {
+// ---- buildChallengeJson helpers (split to reduce complexity) ----
+
+function buildJokersJson(state: BuilderState): ChallengeJson["jokers"] {
+  return state.jokers.map((j) => {
+    const out: ChallengeJoker = { id: j.item.id };
+    if (j.edition) out.edition = j.edition.replace(/^e_/, "") as ChallengeJoker["edition"];
+    if (j.eternal) out.eternal = true;
+    return out;
+  });
+}
+
+function buildModifiersJson(state: BuilderState): NonNullable<ChallengeJson["rules"]>["modifiers"] | undefined {
+  const modifiers: { id: string; value: number }[] = [];
+  if (state.dollars !== 4) modifiers.push({ id: "dollars", value: state.dollars });
+  if (state.hands !== 4) modifiers.push({ id: "hands", value: state.hands });
+  if (state.discards !== 3) modifiers.push({ id: "discards", value: state.discards });
+  if (state.handSize !== 8) modifiers.push({ id: "hand_size", value: state.handSize });
+  return modifiers.length > 0 ? modifiers : undefined;
+}
+
+function buildDeckJson(state: BuilderState): ChallengeJson["deck"] {
   const allStandard = state.deckCards.every(
     (c) =>
       c.count === 1 &&
       c.instances.every((i) => !i.enhancement && !i.edition && !i.seal),
   );
-  const json: ChallengeJson = {
-    key: slugify(state.name),
-    name: state.name || "Untitled Challenge",
-    jokers: state.jokers.map((j) => {
-      const out: ChallengeJson["jokers"][number] = { id: j.item.id };
-      if (j.edition) out.edition = j.edition.replace(/^e_/, "");
-      if (j.eternal) out.eternal = true;
-      return out;
-    }),
-    deck: { type: "Challenge Deck" },
-  };
-  if (
-    state.dollars !== 4 ||
-    state.hands !== 4 ||
-    state.discards !== 3 ||
-    state.handSize !== 8
-  ) {
-    const modifiers: { id: string; value: number }[] = [];
-    if (state.dollars !== 4)
-      modifiers.push({ id: "dollars", value: state.dollars });
-    if (state.hands !== 4) modifiers.push({ id: "hands", value: state.hands });
-    if (state.discards !== 3)
-      modifiers.push({ id: "discards", value: state.discards });
-    if (state.handSize !== 8)
-      modifiers.push({ id: "hand_size", value: state.handSize });
-    json.rules = { ...json.rules, modifiers };
+  if (allStandard) return { type: "Challenge Deck" };
+
+  const suitIncluded = new Set<string>();
+  const suitExcluded = new Set<string>();
+  let suitPartial = false;
+  for (const s of SUIT_NAMES) {
+    const deckCards = state.deckCards.filter((c) => c.suit === s);
+    if (deckCards.every((c) => c.count > 0)) suitIncluded.add(s);
+    else if (deckCards.every((c) => c.count === 0)) suitExcluded.add(s);
+    else suitPartial = true;
   }
-  if (state.consumables.length > 0) {
-    json.consumeables = state.consumables.map((c) => ({ id: c.id }));
+
+  const rankIncluded = new Set<string>();
+  const rankExcluded = new Set<string>();
+  let rankPartial = false;
+  for (const r of RANK_NAMES) {
+    const deckCards = state.deckCards.filter((c) => c.rank === r);
+    if (deckCards.every((c) => c.count > 0)) rankIncluded.add(r);
+    else if (deckCards.every((c) => c.count === 0)) rankExcluded.add(r);
+    else rankPartial = true;
   }
-  if (state.vouchers.length > 0) {
-    json.vouchers = state.vouchers.map((v) => ({ id: v.id }));
-  }
-  if (!allStandard) {
-    // --- Suit-level analysis ---
-    const suitShort: Record<string, string> = {
-      Hearts: "H",
-      Clubs: "C",
-      Diamonds: "D",
-      Spades: "S",
-    };
-    const rankShort: Record<string, string> = {
-      A: "A",
-      "2": "2",
-      "3": "3",
-      "4": "4",
-      "5": "5",
-      "6": "6",
-      "7": "7",
-      "8": "8",
-      "9": "9",
-      "10": "T",
-      J: "J",
-      Q: "Q",
-      K: "K",
-    };
-    const suitNames = ["Hearts", "Clubs", "Diamonds", "Spades"];
-    const rankNames = [
-      "2",
-      "3",
-      "4",
-      "5",
-      "6",
-      "7",
-      "8",
-      "9",
-      "10",
-      "J",
-      "Q",
-      "K",
-      "A",
-    ];
 
-    const suitIncluded = new Set<string>();
-    const suitExcluded = new Set<string>();
-    let suitPartial = false;
-    for (const s of suitNames) {
-      const deckCards = state.deckCards.filter((c) => c.suit === s);
-      if (deckCards.every((c) => c.count > 0)) suitIncluded.add(s);
-      else if (deckCards.every((c) => c.count === 0)) suitExcluded.add(s);
-      else suitPartial = true;
-    }
+  const hasDuplicates = state.deckCards.some((c) => c.count > 1);
+  const hasCustomCards = state.deckCards.some((c) =>
+    c.instances?.some((i) => i.enhancement || i.edition || i.seal),
+  );
 
-    const rankIncluded = new Set<string>();
-    const rankExcluded = new Set<string>();
-    let rankPartial = false;
-    for (const r of rankNames) {
-      const deckCards = state.deckCards.filter((c) => c.rank === r);
-      if (deckCards.every((c) => c.count > 0)) rankIncluded.add(r);
-      else if (deckCards.every((c) => c.count === 0)) rankExcluded.add(r);
-      else rankPartial = true;
-    }
-
-    const hasDuplicates = state.deckCards.some((c) => c.count > 1);
-    const hasCustomCards = state.deckCards.some((c) =>
-      c.instances?.some((i) => i.enhancement || i.edition || i.seal),
-    );
-
-    const deck: ChallengeJson["deck"] = { type: "Challenge Deck" };
-
-    if (suitPartial || rankPartial || hasDuplicates || hasCustomCards) {
-      // Mixed/duplicate/custom state — use cards array
-      deck.cards = [];
-      for (const c of state.deckCards) {
-        const insts = c.instances || [];
-        for (const inst of insts) {
-          const entry: {
-            s: string;
-            r: string;
-            e?: string;
-            d?: string;
-            g?: string;
-          } = {
-            s: suitShort[c.suit],
-            r: rankShort[c.rank],
-          };
-          if (inst.enhancement) entry.e = inst.enhancement;
-          if (inst.edition) entry.d = inst.edition.replace(/^e_/, "");
-          if (inst.seal) entry.g = inst.seal;
-          deck.cards.push(entry);
-        }
-      }
-    } else {
-      // Suit filters — prefer the shorter list (use abbreviations)
-      if (
-        suitIncluded.size > 0 &&
-        suitIncluded.size < 4 &&
-        suitIncluded.size <= suitExcluded.size
-      ) {
-        const yes: Record<string, true> = {};
-        suitIncluded.forEach((s) => (yes[suitShort[s]] = true));
-        deck.yes_suits = yes;
-      } else if (suitExcluded.size > 0 && suitExcluded.size < 4) {
-        const no: Record<string, true> = {};
-        suitExcluded.forEach((s) => (no[suitShort[s]] = true));
-        deck.no_suits = no;
-      }
-
-      // Rank filters — prefer the shorter list (use abbreviations)
-      if (
-        rankIncluded.size > 0 &&
-        rankIncluded.size < 13 &&
-        rankIncluded.size <= rankExcluded.size
-      ) {
-        const yes: Record<string, true> = {};
-        rankIncluded.forEach((r) => (yes[rankShort[r]] = true));
-        deck.yes_ranks = yes;
-      } else if (rankExcluded.size > 0 && rankExcluded.size < 13) {
-        const no: Record<string, true> = {};
-        rankExcluded.forEach((r) => (no[rankShort[r]] = true));
-        deck.no_ranks = no;
+  if (suitPartial || rankPartial || hasDuplicates || hasCustomCards) {
+    const cards: DeckCardEntry[] = [];
+    for (const c of state.deckCards) {
+      const insts = c.instances || [];
+      for (const inst of insts) {
+        const entry: DeckCardEntry = {
+          s: SUIT_SHORT_CODE[c.suit],
+          r: RANK_SHORT_CODE[c.rank],
+        };
+        if (inst.enhancement) entry.e = inst.enhancement;
+        if (inst.edition) entry.d = inst.edition.replace(/^e_/, "") as DeckCardEntry["d"];
+        if (inst.seal) entry.g = inst.seal;
+        cards.push(entry);
       }
     }
-
-    json.deck = deck;
+    return { type: "Challenge Deck", cards };
   }
+
+  // Suit filters — prefer the shorter list
+  const deck: ChallengeJson["deck"] = { type: "Challenge Deck" };
+  if (suitIncluded.size > 0 && suitIncluded.size < 4 && suitIncluded.size <= suitExcluded.size) {
+    const yes: Record<string, true> = {};
+    suitIncluded.forEach((s) => (yes[SUIT_SHORT_CODE[s]] = true));
+    deck.yes_suits = yes;
+  } else if (suitExcluded.size > 0 && suitExcluded.size < 4) {
+    const no: Record<string, true> = {};
+    suitExcluded.forEach((s) => (no[SUIT_SHORT_CODE[s]] = true));
+    deck.no_suits = no;
+  }
+  if (rankIncluded.size > 0 && rankIncluded.size < 13 && rankIncluded.size <= rankExcluded.size) {
+    const yes: Record<string, true> = {};
+    rankIncluded.forEach((r) => (yes[RANK_SHORT_CODE[r]] = true));
+    deck.yes_ranks = yes;
+  } else if (rankExcluded.size > 0 && rankExcluded.size < 13) {
+    const no: Record<string, true> = {};
+    rankExcluded.forEach((r) => (no[RANK_SHORT_CODE[r]] = true));
+    deck.no_ranks = no;
+  }
+  return deck;
+}
+
+function buildRestrictionsJson(state: BuilderState): ChallengeJson["restrictions"] {
   const bannedCards = [
     ...state.bannedJokers.map((j) => ({ id: j.id })),
     ...state.bannedConsumables.map((c) => ({ id: c.id })),
     ...state.bannedVouchers.map((v) => ({ id: v.id })),
   ];
 
-  if (state.bannedBlinds.length > 0 || bannedCards.length > 0) {
-    json.restrictions = {};
-    if (bannedCards.length > 0) {
-      json.restrictions.banned_cards = bannedCards;
-    }
-    if (state.bannedBlinds.length > 0) {
-      json.restrictions.banned_other = state.bannedBlinds.map((b) => ({
-        id: b.id,
-        type: "blind",
-      }));
-    }
+  if (state.bannedBlinds.length === 0 && bannedCards.length === 0) {
+    return undefined;
   }
+
+  return {
+    ...(bannedCards.length > 0 ? { banned_cards: bannedCards } : {}),
+    ...(state.bannedBlinds.length > 0
+      ? { banned_other: state.bannedBlinds.map((b) => ({ id: b.id, type: "blind" })) }
+      : {}),
+  };
+}
+
+function buildChallengeJson(state: BuilderState): ChallengeJson {
+  const json: ChallengeJson = {
+    key: slugify(state.name),
+    name: state.name || "Untitled Challenge",
+    jokers: buildJokersJson(state),
+    deck: { type: "Challenge Deck" },
+  };
+
+  const modifiers = buildModifiersJson(state);
+  if (modifiers) {
+    json.rules = { modifiers };
+  }
+
+  if (state.consumables.length > 0) {
+    json.consumeables = state.consumables.map((c) => ({ id: c.id }));
+  }
+  if (state.vouchers.length > 0) {
+    json.vouchers = state.vouchers.map((v) => ({ id: v.id }));
+  }
+
+  json.deck = buildDeckJson(state);
+
+  const restrictions = buildRestrictionsJson(state);
+  if (restrictions) {
+    json.restrictions = restrictions;
+  }
+
   return json;
 }
 
@@ -297,28 +247,6 @@ function applyDeckFilters(deck: {
   no_ranks?: Record<string, true>;
   cards?: { s: string; r: string; e?: string; d?: string; g?: string }[];
 }): DeckCard[] {
-  const suitMap: Record<string, string> = {
-    H: "Hearts",
-    C: "Clubs",
-    D: "Diamonds",
-    S: "Spades",
-  };
-  const rankMap: Record<string, string> = {
-    A: "A",
-    "2": "2",
-    "3": "3",
-    "4": "4",
-    "5": "5",
-    "6": "6",
-    "7": "7",
-    "8": "8",
-    "9": "9",
-    T: "10",
-    J: "J",
-    Q: "Q",
-    K: "K",
-  };
-
   const cards = buildStandardDeck();
 
   // Handle explicit cards array
@@ -329,8 +257,8 @@ function applyDeckFilters(deck: {
       { count: number; instances: CardInstance[] }
     > = {};
     for (const entry of deck.cards) {
-      const suit = suitMap[entry.s];
-      const rank = rankMap[entry.r];
+      const suit = SUIT_SHORT_TO_FULL[entry.s];
+      const rank = RANK_SHORT_TO_FULL[entry.r];
       if (!suit || !rank) continue;
       const k = `${suit}-${rank}`;
       if (!grouped[k]) grouped[k] = { count: 0, instances: [] };
@@ -355,10 +283,10 @@ function applyDeckFilters(deck: {
   }
 
   return cards.map((c) => {
-    const suitShort = Object.entries(suitMap).find(
+    const suitShort = Object.entries(SUIT_SHORT_TO_FULL).find(
       ([, v]) => v === c.suit,
     )?.[0];
-    const rankShort = Object.entries(rankMap).find(
+    const rankShort = Object.entries(RANK_SHORT_TO_FULL).find(
       ([, v]) => v === c.rank,
     )?.[0];
     let count = 1;
@@ -369,37 +297,6 @@ function applyDeckFilters(deck: {
     return { ...c, count };
   });
 }
-
-// ---- Sprites ----
-
-const JOKER_SPRITE: SpriteConfig = {
-  url: "/sprites/Jokers.png",
-  width: 710,
-  height: 1520,
-  cellW: 71,
-  cellH: 95,
-};
-const CONSUMABLE_SPRITE: SpriteConfig = {
-  url: "/sprites/Tarots.png",
-  width: 710,
-  height: 570,
-  cellW: 71,
-  cellH: 95,
-};
-const VOUCHER_SPRITE: SpriteConfig = {
-  url: "/sprites/Vouchers.png",
-  width: 639,
-  height: 380,
-  cellW: 71,
-  cellH: 95,
-};
-const BLIND_SPRITE = {
-  src: "/sprites/BlindChips.png",
-  sheetWidth: 1428,
-  sheetHeight: 2108,
-  cellWidth: 1428,
-  cellHeight: 68,
-} as const;
 
 // ---- Steps ----
 
@@ -419,15 +316,6 @@ const EDITIONS: { id: string; label: string; color: string }[] = [
 ];
 
 // ---- Selected-item cards (reusable) ----
-
-interface SpriteConfig {
-  url: string;
-  width: number;
-  height: number;
-  cellW: number;
-  cellH: number;
-}
-
 function SelectedItemCard({
   item,
   sprite,
@@ -456,16 +344,16 @@ function SelectedItemCard({
         <div
           className="rounded-sm relative"
           style={{
-            width: sprite.cellW,
-            height: sprite.cellH,
+            width: sprite.cellWidth,
+            height: sprite.cellHeight,
           }}
         >
           <div
             className="absolute inset-0 rounded-sm"
             style={{
-              backgroundImage: `url(${sprite.url})`,
-              backgroundSize: `${sprite.width}px ${sprite.height}px`,
-              backgroundPosition: `-${item.pos.x * sprite.cellW}px -${item.pos.y * sprite.cellH}px`,
+              backgroundImage: `url(${sprite.src})`,
+              backgroundSize: `${sprite.sheetWidth}px ${sprite.sheetHeight}px`,
+              backgroundPosition: `-${item.pos.x * sprite.cellWidth}px -${item.pos.y * sprite.cellHeight}px`,
               imageRendering: "pixelated",
             }}
           />
@@ -473,9 +361,9 @@ function SelectedItemCard({
             <div
               className="absolute inset-0 rounded-sm"
               style={{
-                backgroundImage: `url(${sprite.url})`,
-                backgroundSize: `${sprite.width}px ${sprite.height}px`,
-                backgroundPosition: `-${item.soul_pos.x * sprite.cellW}px -${item.soul_pos.y * sprite.cellH}px`,
+                backgroundImage: `url(${sprite.src})`,
+                backgroundSize: `${sprite.sheetWidth}px ${sprite.sheetHeight}px`,
+                backgroundPosition: `-${item.soul_pos.x * sprite.cellWidth}px -${item.soul_pos.y * sprite.cellHeight}px`,
                 imageRendering: "pixelated",
               }}
             />
@@ -645,6 +533,105 @@ function BossBlindPicker({
 
 // ---- Main View ----
 
+interface BuildInitialStateInput {
+  initialDraft: BuilderData["initialDraft"];
+  jokers: PickerItem[];
+  consumables: PickerItem[];
+  vouchers: PickerItem[];
+  blinds: PickerItem[];
+}
+
+function buildInitialState({
+  initialDraft,
+  jokers,
+  consumables,
+  vouchers,
+  blinds,
+}: BuildInitialStateInput): BuilderState {
+  if (!initialDraft) {
+    return {
+      name: "",
+      description: "",
+      dollars: 4,
+      hands: 4,
+      discards: 3,
+      handSize: 8,
+      jokers: [],
+      consumables: [],
+      vouchers: [],
+      deckCards: buildStandardDeck(),
+      bannedBlinds: [],
+      bannedJokers: [],
+      bannedConsumables: [],
+      bannedVouchers: [],
+    };
+  }
+
+  const json = initialDraft.json_data as {
+    key?: string;
+    name?: string;
+    jokers?: { id: string; edition?: string; eternal?: boolean }[];
+    consumeables?: { id: string }[];
+    vouchers?: { id: string }[];
+    dollars?: number;
+    hands?: number;
+    discards?: number;
+    hand_size?: number;
+    deck?: {
+      yes_suits?: Record<string, true>;
+      no_suits?: Record<string, true>;
+      yes_ranks?: Record<string, true>;
+      no_ranks?: Record<string, true>;
+      cards?: { s: string; r: string; e?: string; d?: string; g?: string }[];
+    };
+    restrictions?: {
+      banned_cards?: { id: string }[];
+      banned_other?: { id: string; type: string }[];
+    };
+  };
+
+  return {
+    name: initialDraft.name || "",
+    description: initialDraft.description || "",
+    dollars: json.dollars ?? 4,
+    hands: json.hands ?? 4,
+    discards: json.discards ?? 3,
+    handSize: json.hand_size ?? 8,
+    jokers: (json.jokers || [])
+      .map((j) => {
+        const item = jokers.find((gj) => gj.id === j.id);
+        if (!item) return null;
+        return {
+          uid: nextJokerUid(),
+          item,
+          edition: j.edition || null,
+          eternal: !!j.eternal,
+        };
+      })
+      .filter(Boolean) as SelectedJoker[],
+    consumables: (json.consumeables || [])
+      .map((c) => consumables.find((gc) => gc.id === c.id))
+      .filter(Boolean) as PickerItem[],
+    vouchers: (json.vouchers || [])
+      .map((v) => vouchers.find((gv) => gv.id === v.id))
+      .filter(Boolean) as PickerItem[],
+    deckCards: applyDeckFilters(json.deck || {}),
+    bannedBlinds: (json.restrictions?.banned_other || [])
+      .filter((b) => b.type === "blind")
+      .map((b) => blinds.find((gb) => gb.id === b.id))
+      .filter(Boolean) as PickerItem[],
+    bannedJokers: (json.restrictions?.banned_cards || [])
+      .map((c) => jokers.find((gj) => gj.id === c.id))
+      .filter(Boolean) as PickerItem[],
+    bannedConsumables: (json.restrictions?.banned_cards || [])
+      .map((c) => consumables.find((gc) => gc.id === c.id))
+      .filter(Boolean) as PickerItem[],
+    bannedVouchers: (json.restrictions?.banned_cards || [])
+      .map((c) => vouchers.find((gv) => gv.id === c.id))
+      .filter(Boolean) as PickerItem[],
+  };
+}
+
 export default function BuildView({
   jokers,
   descriptions,
@@ -656,96 +643,22 @@ export default function BuildView({
   isGuest,
 }: BuilderData) {
   // Build initial state from server-loaded draft (no loading flash)
-  function buildInitialState(): BuilderState {
-    if (!initialDraft) {
-      return {
-        name: "",
-        description: "",
-        dollars: 4,
-        hands: 4,
-        discards: 3,
-        handSize: 8,
-        jokers: [],
-        consumables: [],
-        vouchers: [],
-        deckCards: buildStandardDeck(),
-        bannedBlinds: [],
-        bannedJokers: [],
-        bannedConsumables: [],
-        bannedVouchers: [],
-      };
-    }
-
-    const json = initialDraft.json_data as {
-      key?: string;
-      name?: string;
-      jokers?: { id: string; edition?: string; eternal?: boolean }[];
-      consumeables?: { id: string }[];
-      vouchers?: { id: string }[];
-      dollars?: number;
-      hands?: number;
-      discards?: number;
-      hand_size?: number;
-      deck?: {
-        yes_suits?: Record<string, true>;
-        no_suits?: Record<string, true>;
-        yes_ranks?: Record<string, true>;
-        no_ranks?: Record<string, true>;
-        cards?: { s: string; r: string; e?: string; d?: string; g?: string }[];
-      };
-      restrictions?: {
-        banned_cards?: { id: string }[];
-        banned_other?: { id: string; type: string }[];
-      };
-    };
-
-    return {
-      name: initialDraft.name || "",
-      description: initialDraft.description || "",
-      dollars: json.dollars ?? 4,
-      hands: json.hands ?? 4,
-      discards: json.discards ?? 3,
-      handSize: json.hand_size ?? 8,
-      jokers: (json.jokers || [])
-        .map((j) => {
-          const item = jokers.find((gj) => gj.id === j.id);
-          if (!item) return null;
-          return {
-            uid: nextJokerUid(),
-            item,
-            edition: j.edition || null,
-            eternal: !!j.eternal,
-          };
-        })
-        .filter(Boolean) as SelectedJoker[],
-      consumables: (json.consumeables || [])
-        .map((c) => consumables.find((gc) => gc.id === c.id))
-        .filter(Boolean) as PickerItem[],
-      vouchers: (json.vouchers || [])
-        .map((v) => vouchers.find((gv) => gv.id === v.id))
-        .filter(Boolean) as PickerItem[],
-      deckCards: applyDeckFilters(json.deck || {}),
-      bannedBlinds: (json.restrictions?.banned_other || [])
-        .filter((b) => b.type === "blind")
-        .map((b) => blinds.find((gb) => gb.id === b.id))
-        .filter(Boolean) as PickerItem[],
-      bannedJokers: (json.restrictions?.banned_cards || [])
-        .map((c) => jokers.find((gj) => gj.id === c.id))
-        .filter(Boolean) as PickerItem[],
-      bannedConsumables: (json.restrictions?.banned_cards || [])
-        .map((c) => consumables.find((gc) => gc.id === c.id))
-        .filter(Boolean) as PickerItem[],
-      bannedVouchers: (json.restrictions?.banned_cards || [])
-        .map((c) => vouchers.find((gv) => gv.id === c.id))
-        .filter(Boolean) as PickerItem[],
-    };
-  }
-
   const [step, setStep] = useState(0);
-  const [state, setState] = useState<BuilderState>(buildInitialState);
+  const [state, setState] = useState<BuilderState>(() =>
+    buildInitialState({
+      initialDraft,
+      jokers,
+      consumables,
+      vouchers,
+      blinds,
+    }),
+  );
   const [code, setCode] = useState<string | null>(editCode);
   const [status, setStatus] = useState<string | null>(
     initialDraft?.status ?? null,
+  );
+  const [version, setVersion] = useState<number | null>(
+    initialDraft?.version ?? null,
   );
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -843,6 +756,9 @@ export default function BuildView({
       }
       const isFirstPublish = status !== "published";
       setStatus("published");
+      if (data.version) {
+        setVersion(data.version);
+      }
       if (isFirstPublish) {
         setShowPublishedModal(true);
       }
@@ -890,7 +806,9 @@ export default function BuildView({
                   : "bg-amber-500/10 text-amber-400"
               }`}
             >
-              {status === "published" ? "Published" : "Draft"}
+              {status === "published"
+                ? `Published${version ? ` v${version}` : ""}`
+                : "Draft"}
             </span>
           )}
         </div>

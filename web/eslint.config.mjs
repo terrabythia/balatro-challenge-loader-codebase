@@ -16,7 +16,18 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
   ]),
-  ...storybook.configs["flat/recommended"]
+  // Allow `any` in test files — mock Request objects require type flexibility
+  {
+    files: ["**/__tests__/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { argsIgnorePattern: "^_" },
+      ],
+    },
+  },
+  ...storybook.configs["flat/recommended"],
 ]);
 
 export default eslintConfig;

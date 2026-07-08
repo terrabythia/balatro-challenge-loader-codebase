@@ -13,6 +13,10 @@ mock.module("@/lib/auth", () => ({
   requireAuth: mock(() => {
     throw new Error("Unauthorized");
   }),
+  requireDiscordAuth: mock(() => {
+    throw new Error("Unauthorized");
+  }),
+  claimGuestContent: mock(() => Promise.resolve(0)),
   createSession: mock(() => {}),
   destroySession: mock(() => {}),
 }));
